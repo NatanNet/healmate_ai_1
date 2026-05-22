@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button, Input, Card } from '../components';
 import authService from '../services/authService';
@@ -12,9 +12,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   // Redirect if already logged in
+  // if (user) {
+  //   navigate('/dashboard');
+  // }
+  useEffect(() => {
   if (user) {
     navigate('/dashboard');
   }
+}, [user, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
