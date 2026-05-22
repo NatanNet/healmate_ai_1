@@ -37,10 +37,11 @@ out/
 coverage/
 
 # ========== DOCKER ==========
-Dockerfile
-.dockerignore
 docker-compose.yml
 docker-compose.override.yml
+.dockerignore
+# Allow Dockerfile in backend-fastapi-full (deployment needed)
+# Dockerfile  ← COMMENT OUT atau hapus
 
 # ========== LOGS & CACHE ==========
 npm-debug.log*
