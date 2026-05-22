@@ -94,7 +94,7 @@ export default function RegisterPage() {
             label="Nama Lengkap"
             type="text"
             name="fullName"
-            placeholder="John Doe"
+            placeholder="Nama lengkap Anda"
             value={formData.fullName}
             onChange={handleChange}
             disabled={loading}
@@ -104,7 +104,7 @@ export default function RegisterPage() {
             label="Username"
             type="text"
             name="username"
-            placeholder="johndoe"
+            placeholder="namapanggilan"
             value={formData.username}
             onChange={handleChange}
             disabled={loading}
@@ -114,7 +114,7 @@ export default function RegisterPage() {
             label="Email"
             type="email"
             name="email"
-            placeholder="john@example.com"
+            placeholder="nama@example.com"
             value={formData.email}
             onChange={handleChange}
             disabled={loading}
