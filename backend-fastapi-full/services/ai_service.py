@@ -94,10 +94,13 @@ class AIService:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     f"{AI_URL}/predict",
-                    json={"message": message},
+                    json={"text": message},
                     timeout=10.0
                 )
-                
+                print(f"\n[EXTERNAL AI API] Called {AI_URL}/predict with message: {message}")
+                print(f"External AI API response status: {response.status_code}")
+                print(f"External AI API response content: {response.text}")
+
                 if response.status_code == 200:
                     result = response.json()
                     return {

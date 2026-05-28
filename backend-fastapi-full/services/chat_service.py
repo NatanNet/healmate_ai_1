@@ -4,6 +4,7 @@ import traceback
 from database.mongodb import get_db
 from utils.translation import translate_id_to_en, translate_en_to_id
 from utils.chatbot_engine import ChatbotEngine
+from services.ai_service import get_ai_response as get_ai_response_service
 from bson import ObjectId
 
 
@@ -28,18 +29,24 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
         message_en = await translate_id_to_en(message)
         print(f"✓ Translation Result: '{message_en}'")
         
-        # Step 2: Process dengan chatbot engine
+        # Step 2: Process dengan chatbot engine  / kalau LLM jadi, ini diubah AI Service dan translate dihapus
         print(f"\n[STEP 2] Calling ChatbotEngine.process_message()...")
         print(f"Input to ChatbotEngine: '{message_en}'")
         
         chatbot_result = ChatbotEngine.process_message(message_en)
         print(f"✓ ChatbotEngine Result: {chatbot_result}")
         
-        ai_response_id = chatbot_result.get("response", "Default response")
-        emotion = chatbot_result.get("emotion", "neutral")
-        confidence = chatbot_result.get("confidence", 0.0)
-        intent = chatbot_result.get("intent", "default")
+        # Step 2b: Get AI response dari AI service
+        print(f"\n[STEP 2B] Getting AI response dari AI service...")
+        ai_message_post = await get_ai_response_service(message_en)
+        print(f"✓ AI Service Result: {ai_message_post}")
         
+        # Extract fields dari AI service response
+        ai_response_id = chatbot_result.get("response", "Default response")
+        emotion = ai_message_post.get("emotion", "neutral")
+        confidence = ai_message_post.get("confidence", 0.00000)
+        intent = chatbot_result.get("intent", "default")
+
         print(f"\n[EXTRACT] Emotion: {emotion} | Intent: {intent} | Confidence: {confidence}")
         print(f"[EXTRACT] Response: '{ai_response_id}'")
         

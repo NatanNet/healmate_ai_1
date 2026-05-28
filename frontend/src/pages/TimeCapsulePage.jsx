@@ -43,7 +43,7 @@ export default function TimeCapsulePage() {
         
         {/* Form Segel Perasaan */}
         <div className="bg-white border border-gray-100 p-8 rounded-[2rem] shadow-sm">
-          <h2 className="text-xl font-bold text-[#113C3A] mb-2">Segel Perasaanmu</h2>
+          <h2 className="text-xl font-bold text-[#113C3A] mb-2"></h2>
           <p className="text-sm text-gray-500 mb-8 leading-relaxed">
             Tuliskan rasa sakit, harapan, atau sekadar uneg-uneg hari ini. Kunci pesan ini agar dibaca oleh dirimu di masa depan yang sudah lebih kuat.
           </p>

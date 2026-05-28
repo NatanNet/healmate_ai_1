@@ -124,7 +124,7 @@ navigate('/dashboard');
         <div className="mt-6 text-center text-sm text-gray-600">
           Belum punya akun?{' '}
           <Link to="/register" className="text-primary-light hover:underline font-semibold">
-            Daftar di sini
+            Register
           </Link>
         </div>
       </Card>

@@ -132,7 +132,7 @@ export default function DashboardPage() {
             <div className="bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-3">
               <i className="fas fa-robot text-2xl"></i>
             </div>
-            <h3 className="font-semibold text-lg">HealMate Companion</h3>
+            <h3 className="font-semibold text-lg">HealMate Partner</h3>
             <p className="text-white/80 text-xs mt-1">Mulai sesi curhat AI sekarang</p>
           </button>
 
@@ -169,7 +169,7 @@ export default function DashboardPage() {
           {/* Chart */}
           <div className="lg:col-span-2 bg-white border border-gray-100 rounded-3xl p-6 shadow-sm flex flex-col">
             <div className="flex justify-between items-center mb-8">
-              <h3 className="font-bold text-gray-800">Grafik Sentimen (NLP)</h3>
+              <h3 className="font-bold text-gray-800">Grafik Emotion</h3>
               
               <div className="flex items-center gap-4 text-xs font-semibold text-gray-600">
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#FF6B6B] shadow-sm"></span> Anger</span>

@@ -143,7 +143,7 @@ export default function RegisterPage() {
         <div className="mt-6 text-center text-sm text-gray-600">
           Sudah punya akun?{' '}
           <Link to="/login" className="text-primary-light hover:underline font-semibold">
-            Login di sini
+            Login
           </Link>
         </div>
       </Card>

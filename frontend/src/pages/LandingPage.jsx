@@ -253,7 +253,7 @@ export default function LandingPage() {
                 <li><a href="#" className="text-white/70 hover:text-[#22D1D1] transition-colors text-sm">Dashboard</a></li>
                 <li><a href="#" className="text-white/70 hover:text-[#22D1D1] transition-colors text-sm">AI Chatbot</a></li>
                 <li><a href="#" className="text-white/70 hover:text-[#22D1D1] transition-colors text-sm">Time Capsule</a></li>
-                <li><a href="#" className="text-white/70 hover:text-[#22D1D1] transition-colors text-sm">Mood Tracker</a></li>
+                <li><a href="#" className="text-white/70 hover:text-[#22D1D1] transition-colors text-sm">Set Goals</a></li>
               </ul>
             </div>
 
