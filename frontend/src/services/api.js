@@ -3,8 +3,9 @@ import { useAuthStore } from '../stores/authStore';
 
 const api = axios.create({
   // baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
-//baseURL: 'https://natannet-healmate-ai-be1.hf.space/api',
-      baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+      // baseURL: 'https://natannet-healmate-ai-be1.hf.space/api',
+      // baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+      baseURL: import.meta.env.VITE_API_URL || 'https://natannet-healmate-ai-be1.hf.space/api',
   withCredentials: true
 });
 
