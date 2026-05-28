@@ -6,7 +6,7 @@ import { useAuthStore } from '../stores/authStore';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, login } = useAuthStore();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -50,8 +50,25 @@ export default function LoginPage() {
         throw new Error('Format email tidak valid');
       }
 
-      await authService.login(formData.email, formData.password);
-      navigate('/dashboard');
+      const response = await authService.login(
+  formData.email,
+  formData.password
+);
+
+console.log("LOGIN RESPONSE:", response);
+
+login(
+  {
+    user_id: response.user_id,
+    email: response.email,
+    username: response.username,
+    fullName: response.fullName
+  },
+  response.token
+);
+
+navigate('/dashboard');
+
     } catch (err) {
       setError(err.message || 'Login gagal. Cek email dan password Anda');
     } finally {
@@ -63,7 +80,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-primary-dark to-primary-light flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-primary-dark mb-2">🌱 HealMate</h1>
+          <h1 className="text-3xl font-bold text-primary-dark mb-2">HealMate</h1>
           <p className="text-gray-600">Your Post-Breakup Recovery</p>
         </div>
 

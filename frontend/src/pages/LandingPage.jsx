@@ -10,14 +10,14 @@ export default function LandingPage() {
     {
       id: 1,
       icon: 'fas fa-comments',
-      title: 'AI Chatbot (NLP)',
-      description: 'Teman curhat virtual yang mengerti perasaanmu. Memanfaatkan pemrosesan bahasa alami untuk memberikan respons yang menenangkan.'
+      title: 'AI Chatbot',
+      description: 'Teman Curhat Virtualmu. Dapat memberikan respon yang menyenangkan.'
     },
     {
       id: 2,
       icon: 'fas fa-chart-line',
       title: 'Grafik Mood',
-      description: 'Pantau fluktuasi emosimu dari waktu ke waktu melalui visualisasi data interaktif di dalam Dashboard.'
+      description: 'Lihat emosimu setalah curhat, dan pantau di dalam Dashboard.'
     },
     {
       id: 3,
@@ -29,7 +29,7 @@ export default function LandingPage() {
       id: 4,
       icon: 'fas fa-bullseye',
       title: 'Set Goals',
-      description: 'Susun langkah kecil untuk kembali produktif dan kurangi risiko burnout harian.'
+      description: 'Susun langkah kecil untuk kembali produktif.'
     }
   ];
 
@@ -55,7 +55,6 @@ export default function LandingPage() {
           <nav className="hidden md:flex gap-6 lg:gap-8 items-center">
             <a href="#features" className="hover:text-[#22D1D1] transition-colors text-sm font-medium">Fitur</a>
             <a href="#stats" className="hover:text-[#22D1D1] transition-colors text-sm font-medium">Keunggulan</a>
-            <a href="#testimonials" className="hover:text-[#22D1D1] transition-colors text-sm font-medium">Testimoni</a>
             <button
               onClick={() => navigate('/login')}
               className="ml-4 px-6 py-2 bg-gradient-to-r from-[#22D1D1] to-[#20A4A0] text-[#0E3B3A] rounded-full font-bold text-sm hover:shadow-lg hover:scale-105 transition-all duration-300"
@@ -90,13 +89,6 @@ export default function LandingPage() {
             >
               Keunggulan
             </a>
-            <a
-              href="#testimonials"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block py-2 px-4 hover:bg-[#20A4A0]/20 rounded-lg text-sm font-medium transition-colors"
-            >
-              Testimoni
-            </a>
             <button
               onClick={() => {
                 navigate('/login');
@@ -128,14 +120,14 @@ export default function LandingPage() {
                 <span className="text-[#22D1D1]">bersama HealMate!</span>
               </h1>
               <p className="text-base sm:text-lg text-white/95 leading-relaxed max-w-lg font-light">
-                Pendamping pemulihan emosional berteknologi AI (NLP) yang dirancang khusus membantumu menghadapi putus cinta, overthinking, dan ketidakpastian. Privat, personal, dan selalu ada 24 jam untukmu.
+                Pendamping pemulihan emosional yang dirancang khusus membantumu menghadapi putus cinta, overthinking, dan ketidakpastian. Privat, personal, dan selalu menemanimu.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="px-8 py-3.5 bg-[#FFEAA7] text-[#0E3B3A] font-bold rounded-full hover:bg-white hover:shadow-2xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-base"
+                  className="px-8 py-3.5 bg-white text-[#0E3B3A] font-bold rounded-full hover:bg-white hover:shadow-2xl shadow-lg transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 text-base"
                 >
-                  <i className="fas fa-rocket"></i> Mulai Sekarang
+                  <i className="fas fa-robot"></i> Curhat Sekarang
                 </button>
                 <button
                   onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}
@@ -170,7 +162,7 @@ export default function LandingPage() {
               Fitur-Fitur Unggulan
             </h2>
             <p className="text-gray-600 text-base md:text-lg leading-relaxed">
-              Dilengkapi dengan teknologi AI terdepan untuk mendampingmu dalam perjalanan pemulihan emosional
+              Dilengkapi dengan teknologi AI untuk mendampingmu dalam perjalanan pemulihan emosional
             </p>
           </div>
         </section>
@@ -237,64 +229,6 @@ export default function LandingPage() {
 
         {/* Divider */}
         <div className="h-1 bg-gradient-to-r from-transparent via-[#20A4A0]/30 to-transparent"></div>
-
-        {/* Testimonials Section */}
-        <section id="testimonials" className="bg-gradient-to-b from-white to-[#F8FAFB] text-[#0E3B3A] py-16 md:py-24 px-4 md:px-6">
-          <div className="container mx-auto">
-            <div className="max-w-3xl mx-auto text-center mb-12 md:mb-16 space-y-3">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold">
-                Cerita Pengguna Kami
-              </h2>
-              <p className="text-gray-600 text-base md:text-lg">
-                Ribuan pengguna telah merasakan dampak positif HealMate AI dalam perjalanan pemulihan mereka
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                {
-                  name: 'Sarah M.',
-                  role: 'Jakarta',
-                  text: 'HealMate AI benar-benar merespons seperti teman yang mengerti. Setiap hari aku bisa curhat tanpa khawatir.',
-                  rating: 5
-                },
-                {
-                  name: 'Budi R.',
-                  role: 'Bandung',
-                  text: 'Fitur Time Capsule membantu aku melepaskan emosi negatif. Benar-benar transformatif!',
-                  rating: 5
-                },
-                {
-                  name: 'Ayu L.',
-                  role: 'Surabaya',
-                  text: 'Mood Tracker membuat aku sadar pola emosiku. Aplikasi ini worth it!',
-                  rating: 5
-                }
-              ].map((testimonial, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white p-6 md:p-8 rounded-2xl border-2 border-gray-100 hover:border-[#20A4A0] shadow-sm hover:shadow-lg transition-all duration-300 transform hover:scale-105"
-                >
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <i key={i} className="fas fa-star text-[#FFEAA7]"></i>
-                    ))}
-                  </div>
-                  <p className="text-gray-700 text-sm md:text-base mb-6 leading-relaxed italic">
-                    "{testimonial.text}"
-                  </p>
-                  <div className="border-t border-gray-100 pt-4">
-                    <p className="font-semibold text-gray-900">{testimonial.name}</p>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Divider */}
-        <div className="h-1 bg-gradient-to-r from-transparent via-[#20A4A0]/30 to-transparent"></div>
       </main>
 
       {/* Footer */}
@@ -308,7 +242,7 @@ export default function LandingPage() {
                 <span>HealMate</span>
               </a>
               <p className="text-white/70 text-sm leading-relaxed">
-                Aplikasi pendampingan pemulihan emosional berteknologi AI yang tersedia 24/7 untuk Anda.
+                Aplikasi pendampingan pemulihan emosional berteknologi AI yang tersedia 24/7 untuk kamu.
               </p>
             </div>
 
@@ -332,22 +266,6 @@ export default function LandingPage() {
                 <li><a href="#" className="text-white/70 hover:text-[#22D1D1] transition-colors text-sm">Contact Us</a></li>
               </ul>
             </div>
-
-            {/* Follow Us */}
-            <div className="space-y-4">
-              <h6 className="text-base font-bold text-white">Follow Us</h6>
-              <div className="flex gap-3">
-                <a href="#" className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-[#22D1D1] text-white rounded-lg transition-all duration-300 transform hover:scale-110">
-                  <i className="fab fa-facebook text-sm"></i>
-                </a>
-                <a href="#" className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-[#22D1D1] text-white rounded-lg transition-all duration-300 transform hover:scale-110">
-                  <i className="fab fa-instagram text-sm"></i>
-                </a>
-                <a href="#" className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-[#22D1D1] text-white rounded-lg transition-all duration-300 transform hover:scale-110">
-                  <i className="fab fa-twitter text-sm"></i>
-                </a>
-              </div>
-            </div>
           </div>
 
           {/* Divider */}
@@ -356,7 +274,7 @@ export default function LandingPage() {
           {/* Bottom */}
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-white/60 text-xs md:text-sm">
             <p>&copy; 2026 HealMate AI. All rights reserved.</p>
-            <p>Dibuat dengan <i className="fas fa-heart text-red-500 mx-1"></i> untuk kesehatan mentalmu</p>
+            <p>Dibuat untuk kesehatan mentalmu</p>
           </div>
         </div>
       </footer>

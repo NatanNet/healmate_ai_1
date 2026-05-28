@@ -4,8 +4,10 @@ const chatService = {
   sendMessage: async (message) => {
     try {
       const response = await api.post('/chat/send', { message });
+      console.log('✅ chatService response:', response.data);
       return response.data;
     } catch (error) {
+      console.error('❌ chatService error:', error);
       throw error.response?.data || error;
     }
   },

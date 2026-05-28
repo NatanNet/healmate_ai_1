@@ -12,7 +12,7 @@ export default function Button({
   const variants = {
     primary: 'bg-primary-light text-white hover:bg-primary-dark disabled:bg-gray-400',
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 disabled:bg-gray-300',
-    danger: 'bg-red-500 text-white hover:bg-red-600 disabled:bg-red-400',
+    danger: 'bg-red-500 text-whi  te hover:bg-red-600 disabled:bg-red-400',
     ghost: 'bg-transparent text-primary-light hover:bg-primary-light hover:text-white disabled:text-gray-400'
   };
 

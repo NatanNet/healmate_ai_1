@@ -17,18 +17,39 @@ const authService = {
   },
 
   login: async (email, password) => {
-    try {
-      const response = await api.post('/auth/login', { email, password });
-      const { token, user } = response.data;
+  try {
 
-      // Save to store
-      useAuthStore.getState().login(user, token);
+    // kirim login ke backend FastAPI
+    const response = await api.post('/auth/login', {
+      email,
+      password
+    });
 
-      return response.data;
-    } catch (error) {
-      throw error.response?.data || error;
-    }
-  },
+    console.log('LOGIN RESPONSE:', response.data);
+
+    // ambil semua data dari backend
+    const data = response.data;
+
+    // buat object user manual
+    const user = {
+      id: data.user_id,
+      email: data.email,
+      username: data.username,
+      fullName: data.fullName
+    };
+
+    // simpan ke zustand
+    useAuthStore.getState().login(user, data.token);
+
+    return data;
+
+  } catch (error) {
+
+    console.error('LOGIN ERROR:', error);
+
+    throw error.response?.data || error;
+  }
+},
 
   logout: () => {
     useAuthStore.getState().logout();

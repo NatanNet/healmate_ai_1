@@ -1,4 +1,32 @@
 import os
-MONGODB_URI = os.getenv("MONGODB_URI", "mongodb+srv://healmate_user:zujiqQ6BH1e3Cee2@cluster0.hpjnij3.mongodb.net/healmate?retryWrites=true&w=majority")
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# MongoDB
+MONGODB_URI = os.getenv(
+    "MONGODB_URI"
+)
+
+# JWT
+JWT_SECRET = os.getenv(
+    "JWT_SECRET",
+    "healmate_secret"
+)
+
+JWT_EXPIRE = 7
+
+
+# AI API
+AI_URL = os.getenv(
+    "AI_URL"
+)
+
+
+# App
 APP_NAME = "HealMate API"
-DEBUG = os.getenv("DEBUG", "false").lower() == "true"
+
+DEBUG = os.getenv(
+    "DEBUG",
+    "false"
+).lower() == "true"

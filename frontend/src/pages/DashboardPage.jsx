@@ -1,487 +1,225 @@
-import { useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import { Modal } from '../components';
+import { useChatStore } from '../stores/chatStore';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const chatBoxRef = useRef(null);
+  const userName = user?.fullName || 'Pengguna HealMate';
 
-  // State untuk goals
-  const [goals, setGoals] = useState([
-    { id: 1, text: 'Jalan sore 15 menit tanpa pegang HP', category: 'Aktivitas Fisik', completed: false },
-    { id: 2, text: 'Latihan napas panjang 5 kali', category: 'Kesehatan Mental', completed: true },
-    { id: 3, text: 'Kerjakan revisi kodingan 30 menit', category: 'Fokus & Produktivitas', completed: false }
-  ]);
-  const [newGoal, setNewGoal] = useState('');
-  const [goalCategory, setGoalCategory] = useState('Mental');
+  // Mengambil emosi terakhir dari chat
+  const latestEmotion = useChatStore((state) => state.latestEmotion);
 
-  // State untuk chat
-  const [messages, setMessages] = useState([
-    { id: 1, type: 'bot', text: 'Halo, ' + user?.username + '. Senang melihatmu kembali. Bagaimana perasaanmu hari ini?' },
-    { id: 2, type: 'user', text: 'Hari ini rasanya berat banget. Aku masih kepikiran terus, padahal kerjaan numpuk tapi nggak bisa fokus.' },
-    { id: 3, type: 'bot', sentiment: 'Kesedihan & Penurunan Fokus', text: 'Aku mengerti. Sangat wajar merasa tidak fokus saat pikiran masih penuh dengan kenangan. Jangan terlalu keras pada dirimu sendiri ya.\n\nMau coba istirahat 15 menit dari layar, atau mau mengurai perasaanmu lebih dalam bersamaku?' }
-  ]);
-  const [chatInput, setChatInput] = useState('');
-
-  const moodData = [
-    { day: 'Sen', height: 40, emotion: 'Kesepian', type: 'sad' },
-    { day: 'Sel', height: 65, emotion: 'Cemas', type: 'sad' },
-    { day: 'Rab', height: 50, emotion: 'Netral', type: 'calm' },
-    { day: 'Kam', height: 85, emotion: 'Sangat Sedih', type: 'sad' },
-    { day: 'Jum', height: 70, emotion: 'Lebih Baik', type: 'calm' },
-    { day: 'Sab', height: 95, emotion: 'Tenang', type: 'calm' },
-    { day: 'Min', height: 90, emotion: 'Fokus', type: 'calm' }
-  ];
-
-  const toggleGoal = (id) => {
-    setGoals(goals.map(g => g.id === id ? { ...g, completed: !g.completed } : g));
-  };
-
-  const addGoal = () => {
-    if (newGoal.trim()) {
-      const categoryMap = { Mental: 'Kesehatan Mental', Fisik: 'Aktivitas Fisik', Fokus: 'Fokus & Produktivitas' };
-      setGoals([...goals, { id: Date.now(), text: newGoal, category: categoryMap[goalCategory], completed: false }]);
-      setNewGoal('');
-    }
-  };
-
-  const sendMessage = () => {
-    if (chatInput.trim()) {
-      setMessages([...messages, { id: Date.now(), type: 'user', text: chatInput }]);
-      setChatInput('');
-      setTimeout(() => chatBoxRef.current?.scrollTo(0, chatBoxRef.current.scrollHeight), 100);
-    }
-  };
-
-  const handleLogoutConfirm = () => {
+  const handleLogout = () => {
     logout();
     navigate('/login');
-    setShowLogoutModal(false);
   };
 
-  const handleLogoutClick = () => {
-    setShowLogoutModal(true);
+  // Fungsi untuk membuat inisial dinamis (misal "Natanel Putra" -> "NP")
+  const getInitials = (name) => {
+    const parts = name.split(' ');
+    if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return parts[0] ? parts[0][0].toUpperCase() : 'U';
+  };
+
+  // 1. Ubah moodData menjadi State agar bisa diubah secara dinamis
+  const [moodData, setMoodData] = useState([
+    { day: 'Sen', height: 80, type: 'anger' },
+    { day: 'Sel', height: 65, type: 'anxiety' },
+    { day: 'Rab', height: 50, type: 'anxiety' },
+    { day: 'Kam', height: 0, type: 'empty' }, 
+    { day: 'Jum', height: 0, type: 'empty' },       
+    { day: 'Sab', height: 0, type: 'empty' },
+    { day: 'Min', height: 0, type: 'empty' }
+  ]);
+
+  // 2. Gunakan useEffect untuk menimpa data grafik HARI INI dengan emosi dari AI
+  useEffect(() => {
+    if (latestEmotion) {
+      const daysId = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+      const today = daysId[new Date().getDay()]; // Mendapatkan hari ini (misal: 'Kam')
+
+      setMoodData((prevData) => 
+        prevData.map((item) => {
+          if (item.day === today) {
+            // Update bar chart hari ini: tinggi otomatis 85 (bisa disesuaikan), type dari NLP
+            return { ...item, height: 85, type: latestEmotion.toLowerCase() };
+          }
+          return item;
+        })
+      );
+    }
+  }, [latestEmotion]);
+
+  const getBarColor = (type) => {
+    switch (type?.toLowerCase()) {
+      case 'anger':
+        return 'bg-[#FF6B6B] shadow-[0_0_10px_rgba(255,107,107,0.4)]'; 
+      case 'anxiety':
+        return 'bg-[#FFB938] shadow-[0_0_10px_rgba(255,185,56,0.4)]'; 
+      case 'acceptance':
+        return 'bg-[#22B2B0] shadow-[0_0_10px_rgba(34,178,176,0.4)]'; 
+      default:
+        return 'bg-transparent';
+    }
   };
 
   return (
-    <div className="flex h-screen bg-[#F4F7F6] font-['Poppins']">
-      {/* Sidebar Overlay - Mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
-
+    <div className="flex h-screen bg-[#F5F8F8] font-['Poppins'] text-[#333]">
       {/* Sidebar */}
-      <aside className={`
-        fixed md:relative w-64 bg-[#0E3B3A] text-white flex flex-col p-6 z-50
-        transition-all duration-300 h-screen overflow-y-auto
-        ${sidebarOpen ? 'left-0' : '-left-full md:left-0'}
-      `}>
-        <a href="#" className="text-xl font-bold text-center mb-12 flex items-center justify-center gap-2">
-          <i className="fas fa-heart-pulse text-[#22D1D1]"></i> HealMate AI
-        </a>
+      <aside className="w-64 bg-[#113C3A] text-white flex flex-col pt-8 pb-6 px-4 shrink-0">
+        <div className="flex items-center gap-3 px-4 mb-12">
+          <i className="fas fa-heartbeat text-2xl text-[#22B2B0]"></i>
+          <h1 className="text-xl font-bold">HealMate AI</h1>
+        </div>
 
-        <ul className="space-y-3 flex-1">
-          {[
-            { id: 'dashboard', icon: 'fas fa-home', label: 'Dashboard' },
-            { id: 'chatbot', icon: 'fas fa-robot', label: 'Chatbot' },
-            { id: 'time-capsule', icon: 'fas fa-hourglass', label: 'Time Capsule' },
-            { id: 'goals', icon: 'fas fa-bullseye', label: 'Set Goals' }
-          ].map(item => (
-            <li key={item.id}>
-              <button
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setSidebarOpen(false);
-                }}
-                className={`w-full flex items-center gap-4 px-5 py-3 rounded-2xl transition-all text-sm ${
-                  activeTab === item.id
-                    ? 'bg-[#20A4A0] text-white'
-                    : 'text-white/60 hover:bg-[#20A4A0]/20'
-                }`}
-              >
-                <i className={`${item.icon} text-lg w-5`}></i>
-                <span>{item.label}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <nav className="flex-1 space-y-2">
+          <button onClick={() => navigate('/dashboard')} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl bg-[#22B2B0]/20 text-white transition-colors">
+            <i className="fas fa-home w-5"></i>
+            <span className="font-medium text-sm">Dashboard</span>
+          </button>
+          <button onClick={() => navigate('/capsule')} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-white/70 hover:bg-[#22B2B0]/10 transition-colors">
+            <i className="fas fa-hourglass-half w-5"></i>
+            <span className="font-medium text-sm">Time Capsule</span>
+          </button>
+          <button onClick={() => navigate('/goals')} className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-white/70 hover:bg-[#22B2B0]/10 transition-colors">
+            <i className="fas fa-leaf w-5"></i>
+            <span className="font-medium text-sm">Set Goals</span>
+          </button>
+        </nav>
 
-        {/* Curhat Button */}
-        <button
-          onClick={() => {
-            setActiveTab('chatbot');
-            setSidebarOpen(false);
-          }}
-          className="w-full bg-gradient-to-r from-[#22D1D1] to-[#20A4A0] text-white py-3 rounded-2xl flex items-center justify-center gap-2 font-semibold mb-4 hover:scale-105 transition-transform"
-        >
+        <button onClick={() => navigate('/chat')} className="w-full bg-[#22B2B0] text-white py-3 px-4 rounded-xl flex items-center justify-center gap-3 font-semibold mb-4 shadow-lg shadow-[#22B2B0]/30">
           <i className="fas fa-comments"></i> Curhat Sekarang
         </button>
-
-        <button
-          onClick={handleLogoutClick}
-          className="w-full flex items-center gap-4 px-5 py-3 rounded-2xl text-white/60 hover:bg-red-600/20 transition-all text-sm"
+        <button 
+          onClick={handleLogout} 
+          className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-white/70 hover:bg-white/5 transition-colors"
         >
-          <i className="fas fa-sign-out-alt text-lg w-5"></i>
-          <span>Keluar</span>
+          <i className="fas fa-sign-out-alt w-5"></i>
+          <span className="font-medium text-sm">Logout</span>
         </button>
       </aside>
 
-      {/* Logout Confirmation Modal */}
-      <Modal
-        isOpen={showLogoutModal}
-        title="Konfirmasi Logout"
-        onClose={() => setShowLogoutModal(false)}
-        onConfirm={handleLogoutConfirm}
-        confirmText="Ya, Keluar"
-        cancelText="Batal"
-      >
-        <p className="text-gray-700">Apakah Anda yakin ingin keluar dari aplikasi?</p>
-      </Modal>
-
       {/* Main Content */}
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
-        <div className="bg-white border-b p-4 md:p-8 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="md:hidden text-[#0E3B3A] text-2xl"
-            >
-              <i className="fas fa-bars"></i>
-            </button>
-            <div>
-              <h2 className="text-lg md:text-2xl font-bold text-[#0E3B3A]">Halo, {user?.username}! 👋</h2>
-              <p className="text-xs md:text-sm text-gray-600">Tidak apa-apa jika hari ini terasa berat.</p>
+      <main className="flex-1 flex flex-col p-8 overflow-y-auto">
+        {/* Header */}
+        <header className="flex justify-between items-center mb-8 shrink-0">
+          <div>
+            <h2 className="text-2xl font-bold text-[#113C3A] mb-1">Halo, {userName.split(' ')[0]}! 👋</h2>
+            <div className="flex items-center gap-2">
+              <p className="text-gray-500 text-sm">Tidak apa-apa jika hari ini terasa berat.</p>
+              {/* Indikator Emosi Dinamis */}
+              {latestEmotion && (
+                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold text-white ${getBarColor(latestEmotion)}`}>
+                  Sedang {latestEmotion}
+                </span>
+              )}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                setActiveTab('chatbot');
-                setSidebarOpen(false);
-              }}
-              className="flex bg-[#20A4A0] text-white w-10 h-10 rounded-full justify-center items-center text-lg hover:bg-[#147A77] transition-all"
-            >
-              <i className="fas fa-comments"></i>
-            </button>
+          <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100">
+            {/* Inisial Dinamis */}
+            <div className="w-8 h-8 rounded-full bg-[#113C3A] text-white flex items-center justify-center text-xs font-bold">
+              {getInitials(userName)}
+            </div>
+            <span className="text-sm font-semibold text-[#113C3A]">{userName}</span>
+          </div>
+        </header>
+
+        {/* Top Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <button onClick={() => navigate('/chat')} className="bg-gradient-to-br from-[#22B2B0] to-[#1E9E9D] p-6 rounded-3xl flex flex-col justify-center items-center text-white shadow-md hover:scale-[1.02] transition-transform">
+            <div className="bg-white/20 w-12 h-12 rounded-xl flex items-center justify-center mb-3">
+              <i className="fas fa-robot text-2xl"></i>
+            </div>
+            <h3 className="font-semibold text-lg">HealMate Companion</h3>
+            <p className="text-white/80 text-xs mt-1">Mulai sesi curhat AI sekarang</p>
+          </button>
+
+          <div className="bg-white border border-gray-100 p-6 rounded-3xl flex items-center gap-5 shadow-sm">
+            <div className="bg-[#E8F6F6] text-[#22B2B0] w-14 h-14 rounded-2xl flex items-center justify-center shrink-0">
+              <i className="fas fa-lock text-2xl"></i>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 font-medium mb-1">Kapsul Tersimpan</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-[#113C3A]">2</span>
+                <span className="text-xs text-[#22B2B0] font-medium">Menunggu dibuka</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white border border-gray-100 p-6 rounded-3xl flex items-center gap-5 shadow-sm">
+            <div className="bg-[#E8F6F6] text-[#22B2B0] w-14 h-14 rounded-full flex items-center justify-center shrink-0">
+              <i className="fas fa-check-circle text-2xl"></i>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500 font-medium mb-1">Target Pemulihan</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold text-[#113C3A]">12/15</span>
+                <span className="text-xs text-[#22B2B0] font-medium">Selesai minggu ini!</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
-          {/* DASHBOARD TAB */}
-          {activeTab === 'dashboard' && (
-            <div>
-              {/* AI Insight Banner */}
-              <div className="bg-gradient-to-r from-[#0E3B3A] to-[#20A4A0] text-white p-4 md:p-6 rounded-3xl flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-5 mb-6 md:mb-8 shadow-lg">
-                <div className="bg-white/20 p-3 md:p-4 rounded-2xl flex-shrink-0">
-                  <i className="fas fa-brain text-2xl md:text-3xl text-[#22D1D1]"></i>
+        {/* Bottom Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+          
+          {/* Chart */}
+          <div className="lg:col-span-2 bg-white border border-gray-100 rounded-3xl p-6 shadow-sm flex flex-col">
+            <div className="flex justify-between items-center mb-8">
+              <h3 className="font-bold text-gray-800">Grafik Sentimen (NLP)</h3>
+              
+              <div className="flex items-center gap-4 text-xs font-semibold text-gray-600">
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#FF6B6B] shadow-sm"></span> Anger</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#FFB938] shadow-sm"></span> Anxiety</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#22B2B0] shadow-sm"></span> Acceptance</span>
+              </div>
+            </div>
+
+            <div className="flex-1 flex items-end justify-between px-4 bg-[#F9FAFA] rounded-2xl p-6 border border-gray-50">
+              {moodData.map((data, idx) => (
+                <div key={idx} className="flex flex-col items-center gap-4 w-full">
+                  {data.height > 0 && (
+                    <span className="text-[10px] font-bold text-gray-400 opacity-0 hover:opacity-100 transition-opacity cursor-default -mb-2 capitalize">
+                      {data.type}
+                    </span>
+                  )}
+                  <div 
+                    className={`w-8 rounded-full transition-all duration-500 ${getBarColor(data.type)}`} 
+                    style={{ 
+                      height: `${data.height}px`, 
+                      minHeight: data.height > 0 ? '40px' : '0' 
+                    }}
+                  ></div>
+                  <span className="text-xs font-semibold text-gray-500">{data.day}</span>
                 </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Wait List Capsules */}
+          <div className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm">
+            <h3 className="font-bold text-gray-800 mb-6">Kapsul Menunggu</h3>
+            <div className="space-y-4">
+              <div className="bg-[#F9FAFA] border border-gray-100 p-4 rounded-2xl flex items-start justify-between">
                 <div>
-                  <h4 className="font-semibold text-sm md:text-base mb-1">Insight AI: Keseimbangan Emosi Mingguan</h4>
-                  <p className="text-xs md:text-sm text-white/80 leading-relaxed">
-                    Berdasarkan analisis NLP dari curhatanmu minggu ini, tingkat overthinking-mu menurun 15%. Kamu mulai bisa menerima keadaan dengan lebih tenang. Tetap pertahankan!
-                  </p>
+                  <h4 className="text-sm font-bold text-[#113C3A] mb-1">"Untuk Aku di Akhir Tahun"</h4>
+                  <p className="text-xs text-gray-500">Bisa dibuka: 31 Des 2026</p>
                 </div>
+                <i className="fas fa-clock text-gray-400 mt-1"></i>
               </div>
-
-              {/* Stat Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5 mb-6 md:mb-8">
-                {/* Chatbot CTA Card */}
-                <button
-                  onClick={() => setActiveTab('chatbot')}
-                  className="bg-gradient-to-br from-[#20A4A0] to-[#22D1D1] text-white p-6 md:p-8 rounded-3xl flex flex-row md:flex-col items-center md:items-center justify-start md:justify-center gap-4 md:gap-3 cursor-pointer hover:scale-105 transition-transform shadow-lg relative overflow-hidden group md:col-span-1"
-                >
-                  <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full"></div>
-                  <div className="relative z-10 text-center">
-                    <div className="text-3xl md:text-4xl mb-2 block"><i className="fas fa-robot"></i></div>
-                    <h4 className="text-sm md:text-base font-semibold mb-0.5">HealMate Companion</h4>
-                    <p className="text-xs text-white/80">Mulai sesi curhat AI sekarang</p>
-                  </div>
-                </button>
-
-                {/* Capsule Card */}
-                <div className="bg-white p-6 rounded-3xl shadow-md flex items-center gap-5">
-                  <div className="w-12 h-12 bg-[#20A4A0]/10 rounded-2xl flex items-center justify-center text-[#20A4A0] text-2xl flex-shrink-0">
-                    <i className="fas fa-lock"></i>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 font-medium">Kapsul Tersimpan</p>
-                    <p className="text-2xl font-bold text-[#0E3B3A]">
-                      2 <span className="text-xs text-[#22D1D1] font-medium">Menunggu dibuka</span>
-                    </p>
-                  </div>
+              <div className="bg-[#F9FAFA] border border-gray-100 p-4 rounded-2xl flex items-start justify-between">
+                <div>
+                  <h4 className="text-sm font-bold text-[#113C3A] mb-1">"Surat Pelepasan Emosi"</h4>
+                  <p className="text-xs text-gray-500">Bisa dibuka: 15 Ags 2026</p>
                 </div>
-
-                {/* Goal Card */}
-                <div className="bg-white p-6 rounded-3xl shadow-md flex items-center gap-5">
-                  <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center text-green-600 text-2xl flex-shrink-0">
-                    <i className="fas fa-check-circle"></i>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-600 font-medium">Target Pemulihan</p>
-                    <p className="text-2xl font-bold text-[#0E3B3A]">
-                      12/15 <span className="text-xs text-[#20A4A0] font-medium">Selesai minggu ini!</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mood Chart + Capsules Waiting */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-5">
-                {/* Mood Chart */}
-                <div className="lg:col-span-2 bg-white p-6 md:p-8 rounded-3xl shadow-md">
-                  <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
-                    <h3 className="text-sm md:text-base font-semibold text-[#0E3B3A]">Grafik Sentimen (NLP)</h3>
-                    <div className="text-xs text-gray-600 flex gap-4 mt-2 md:mt-0">
-                      <span><i className="fas fa-circle text-[#8FA8FF] text-xs"></i> Sedih</span>
-                      <span><i className="fas fa-circle text-[#22D1D1] text-xs"></i> Tenang</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-flex-end justify-around h-40 md:h-52 gap-2 md:gap-4 bg-[#F8FAFA] p-4 md:p-6 rounded-2xl">
-                    {moodData.map((data, idx) => (
-                      <div key={idx} className="flex flex-col items-center gap-3 flex-1 group relative">
-                        <div
-                          className={`w-6 md:w-7 rounded-full transition-all ${
-                            data.type === 'sad'
-                              ? 'bg-gradient-to-b from-[#8FA8FF] to-[#6786EE]'
-                              : 'bg-gradient-to-b from-[#22D1D1] to-[#147A77]'
-                          }`}
-                          style={{ height: `${data.height * 1.8}px` }}
-                        >
-                          <div className="w-2 h-6 bg-white/40 rounded-full ml-2 mt-1"></div>
-                        </div>
-                        <span className="text-xs font-semibold text-[#0E3B3A]">{data.day}</span>
-                        <div className="absolute -top-8 bg-[#0E3B3A] text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                          {data.emotion}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Capsules Waiting */}
-                <div className="bg-white p-6 rounded-3xl shadow-md">
-                  <h3 className="text-sm md:text-base font-semibold text-[#0E3B3A] mb-4">Kapsul Menunggu</h3>
-                  <div className="space-y-3">
-                    <div className="bg-[#F4F7F6] p-4 rounded-2xl">
-                      <h4 className="text-xs md:text-sm font-semibold text-[#0E3B3A]">"Untuk Aku di Akhir Tahun"</h4>
-                      <p className="text-xs text-gray-600 mt-1">Bisa dibuka: 31 Des 2026</p>
-                      <div className="flex justify-end mt-2 text-gray-600"><i className="fas fa-clock text-lg"></i></div>
-                    </div>
-                    <div className="bg-[#F4F7F6] p-4 rounded-2xl">
-                      <h4 className="text-xs md:text-sm font-semibold text-[#0E3B3A]">"Surat Pelepasan Emosi"</h4>
-                      <p className="text-xs text-gray-600 mt-1">Bisa dibuka: 15 Ags 2026</p>
-                      <div className="flex justify-end mt-2 text-gray-600"><i className="fas fa-clock text-lg"></i></div>
-                    </div>
-                  </div>
-                </div>
+                <i className="fas fa-clock text-gray-400 mt-1"></i>
               </div>
             </div>
-          )}
+          </div>
 
-          {/* CHATBOT TAB */}
-          {activeTab === 'chatbot' && (
-            <div className="bg-white rounded-3xl shadow-md flex flex-col h-[calc(100vh-150px)] md:h-[calc(100vh-200px)] overflow-hidden border border-[#22D1D1]/20">
-              {/* Chat Header */}
-              <div className="bg-gradient-to-r from-[#0E3B3A] to-[#20A4A0] p-5 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-xl">
-                    <i className="fas fa-robot"></i>
-                  </div>
-                  <div>
-                    <h3 className="text-base font-semibold">HealMate Companion</h3>
-                    <p className="text-xs text-white/90">Siap mendengarkan ceritamu kapan saja</p>
-                  </div>
-                </div>
-                <div className="text-xs bg-white/15 px-3 py-1 rounded-full flex items-center gap-2 backdrop-blur">
-                  <i className="fas fa-shield-alt"></i> Privat (NLP Aktif)
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div ref={chatBoxRef} className="flex-1 overflow-y-auto p-5 md:p-6 bg-[#FAFAFA] flex flex-col gap-5">
-                {messages.map(msg => (
-                  <div key={msg.id}>
-                    {msg.sentiment && (
-                      <div className="text-xs text-gray-600 flex items-center gap-2 mb-2">
-                        <i className="fas fa-search-heart"></i> AI mendeteksi: {msg.sentiment}
-                      </div>
-                    )}
-                    <div className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div
-                        className={`max-w-xs md:max-w-md p-4 rounded-3xl text-sm leading-relaxed ${
-                          msg.type === 'user'
-                            ? 'bg-[#20A4A0] text-white rounded-br-sm'
-                            : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm shadow-sm'
-                        }`}
-                      >
-                        {msg.text}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Input */}
-              <div className="p-4 md:p-5 border-t flex gap-3">
-                <input
-                  type="text"
-                  placeholder="Ketik pesanmu di sini..."
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                  className="flex-1 px-5 py-3 border border-gray-300 rounded-full bg-[#F4F7F6] outline-none text-sm"
-                />
-                <button
-                  onClick={sendMessage}
-                  className="w-11 h-11 bg-[#0E3B3A] text-white rounded-full hover:bg-[#20A4A0] transition-all flex items-center justify-center flex-shrink-0"
-                >
-                  <i className="fas fa-paper-plane"></i>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* TIME CAPSULE TAB */}
-          {activeTab === 'time-capsule' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-5">
-              {/* Create */}
-              <div className="bg-white p-6 md:p-8 rounded-3xl shadow-md">
-                <h3 className="text-base md:text-lg font-semibold text-[#0E3B3A] mb-2">Segel Perasaanmu</h3>
-                <p className="text-xs md:text-sm text-gray-600 mb-6">
-                  Tuliskan rasa sakit, harapan, atau sekadar uneg-uneg hari ini. Kunci pesan ini agar dibaca oleh dirimu di masa depan yang sudah lebih kuat.
-                </p>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs md:text-sm font-semibold text-[#0E3B3A] mb-2">Judul Kapsul</label>
-                    <input type="text" placeholder="Contoh: Perasaanku pasca putus" className="w-full px-4 py-3 border border-gray-300 rounded-2xl bg-[#F4F7F6] outline-none text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-xs md:text-sm font-semibold text-[#0E3B3A] mb-2">Kapan Kapsul Boleh Dibuka?</label>
-                    <input type="date" className="w-full px-4 py-3 border border-gray-300 rounded-2xl bg-[#F4F7F6] outline-none text-sm" />
-                  </div>
-                  <div>
-                    <label className="block text-xs md:text-sm font-semibold text-[#0E3B3A] mb-2">Isi Pesan / Surat</label>
-                    <textarea placeholder="Hai diriku di masa depan..." className="w-full px-4 py-3 border border-gray-300 rounded-2xl bg-[#F4F7F6] outline-none text-sm resize-none h-24"></textarea>
-                  </div>
-                  <button className="w-full bg-[#0E3B3A] text-white py-3 rounded-full font-semibold hover:bg-[#20A4A0] transition-all text-sm">
-                    Segel Kapsul Waktu <i className="fas fa-lock ml-2"></i>
-                  </button>
-                </div>
-              </div>
-
-              {/* Vault */}
-              <div className="bg-white p-6 md:p-8 rounded-3xl shadow-md">
-                <h3 className="text-base md:text-lg font-semibold text-[#0E3B3A] mb-4">Brankas Kapsul (Vault)</h3>
-                <div className="space-y-3">
-                  <div className="bg-[#0E3B3A] text-white p-5 rounded-2xl flex justify-between items-start">
-                    <div>
-                      <h4 className="text-sm font-semibold">Masa Tersulit di 2025</h4>
-                      <p className="text-xs text-white/70 mt-1">Disegel: 10 Okt 2025 • Dibuka: 10 Okt 2026</p>
-                    </div>
-                    <i className="fas fa-lock text-[#22D1D1] text-lg"></i>
-                  </div>
-                  <div className="bg-[#20A4A0] text-white p-5 rounded-2xl flex justify-between items-start">
-                    <div>
-                      <h4 className="text-sm font-semibold">Target Pasca Kelulusan</h4>
-                      <p className="text-xs text-white/90 mt-1">Telah terbuka! Tersedia untuk dibaca.</p>
-                    </div>
-                    <i className="fas fa-envelope-open-text text-lg"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* GOALS TAB */}
-          {activeTab === 'goals' && (
-            <div className="bg-white p-6 md:p-8 rounded-3xl shadow-md">
-              <h3 className="text-base md:text-lg font-semibold text-[#0E3B3A] mb-2">Langkah Pemulihan (Micro-Goals)</h3>
-              <p className="text-xs md:text-sm text-gray-600 mb-6">
-                Depresi sering membuat kita kehilangan motivasi. Susun langkah kecil untuk mengembalikan rutinitas tanpa membebani mental.
-              </p>
-
-              {/* Add Goal */}
-              <div className="flex flex-col md:flex-row gap-3 mb-6">
-                <input
-                  type="text"
-                  placeholder="Ketik kebiasaan kecil... (Cth: Minum air putih)"
-                  value={newGoal}
-                  onChange={(e) => setNewGoal(e.target.value)}
-                  className="flex-1 px-5 py-3 border border-gray-300 rounded-full bg-[#F4F7F6] outline-none text-sm"
-                />
-                <select
-                  value={goalCategory}
-                  onChange={(e) => setGoalCategory(e.target.value)}
-                  className="px-4 py-3 border border-gray-300 rounded-full bg-[#F4F7F6] outline-none text-sm"
-                >
-                  <option value="Mental">Kesehatan Mental</option>
-                  <option value="Fisik">Aktivitas Fisik</option>
-                  <option value="Fokus">Fokus & Produktivitas</option>
-                </select>
-                <button
-                  onClick={addGoal}
-                  className="bg-[#20A4A0] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#0E3B3A] transition-all text-sm flex items-center gap-2 whitespace-nowrap"
-                >
-                  <i className="fas fa-plus"></i> Tambah
-                </button>
-              </div>
-
-              {/* Goals List */}
-              <div className="space-y-0">
-                {goals.map(goal => (
-                  <div
-                    key={goal.id}
-                    className={`flex items-center gap-4 py-4 px-4 border-b transition-all ${
-                      goal.completed ? 'opacity-60' : ''
-                    }`}
-                  >
-                    <button
-                      onClick={() => toggleGoal(goal.id)}
-                      className={`w-6 h-6 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                        goal.completed
-                          ? 'bg-[#20A4A0] border-[#20A4A0] text-white'
-                          : 'border-[#20A4A0] text-transparent hover:border-[#0E3B3A]'
-                      }`}
-                    >
-                      <i className="fas fa-check text-xs"></i>
-                    </button>
-
-                    <span
-                      className={`flex-1 text-sm font-medium transition-all ${
-                        goal.completed ? 'line-through text-gray-500' : 'text-gray-800'
-                      }`}
-                    >
-                      {goal.text}
-                    </span>
-
-                    <span
-                      className={`text-xs px-3 py-1 rounded-full font-semibold whitespace-nowrap ${
-                        goal.category === 'Aktivitas Fisik'
-                          ? 'bg-orange-100 text-orange-700'
-                          : goal.category === 'Kesehatan Mental'
-                          ? 'bg-[#0E3B3A]/10 text-[#0E3B3A]'
-                          : 'bg-[#22D1D1]/20 text-[#0E3B3A]'
-                      }`}
-                    >
-                      {goal.category}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </main>
     </div>
