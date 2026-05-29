@@ -38,15 +38,23 @@ export default function DashboardPage() {
 
     const fetchCapsulesData = async () => {
       try {
-        const capsuleResponse = await api.get('/capsules');
-        if (Array.isArray(capsuleResponse.data)) {
-          setCapsulesCount(capsuleResponse.data.length);
-          const today = new Date();
-          const waiting = capsuleResponse.data.filter(c => new Date(c.tanggalBuka || c.openDate) > today);
-          setWaitingCapsules(waiting);
+        // Endpoint
+        const capsuleResponse = await api.get('/timecapsule/'); 
+        
+        let dataKapsul = [];
+        if (capsuleResponse.data && Array.isArray(capsuleResponse.data.timecapsules)) {
+          dataKapsul = capsuleResponse.data.timecapsules;
         }
+
+        // Memperbarui angka di kotak dasbor
+        setCapsulesCount(dataKapsul.length);
+        
+        const today = new Date();
+        const waiting = dataKapsul.filter(c => new Date(c.openDate) > today);
+        setWaitingCapsules(waiting);
+        
       } catch (error) {
-        // Abaikan diam-diam jika data kosong
+        console.error('Gagal memuat jumlah kapsul dari database:', error);
       }
     };
 

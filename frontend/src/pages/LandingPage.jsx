@@ -245,7 +245,6 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-white/60 text-xs md:text-sm">
             <p>&copy; 2026 HealMate AI. Seluruh hak cipta dilindungi.</p>
-            <p className="flex items-center gap-1">Dibuat dengan <i className="fas fa-heart text-red-500 mx-1"></i> untuk kesehatan mentalmu</p>
           </div>
         </div>
       </footer>
