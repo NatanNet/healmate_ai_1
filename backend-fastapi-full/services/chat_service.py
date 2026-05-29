@@ -54,6 +54,7 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
         print(f"\n[STEP 3] Saving to MongoDB...")
         chat_doc = {
             "userId": ObjectId(user_id),
+            # "userId": user_id,
             "userMessage": message,
             "messageEN": message_en,
             "aiResponse": ai_response_id,
@@ -106,6 +107,7 @@ async def get_chat_history(user_id: str, limit: int = 50, skip: int = 0) -> Dict
         db = get_db()
         chats = list(db["chats"].find(
             {"userId": ObjectId(user_id)}
+            # {"userId": user_id}
         ).sort("createdAt", -1).skip(skip).limit(limit))
         
         for chat in chats:

@@ -1,11 +1,13 @@
-export default function Modal({ 
+// src/components/PopUp.jsx
+
+export default function PopUp({ 
   isOpen, 
   title, 
   children, 
   onClose,
   onConfirm,
-  confirmText = 'Confirm',
-  cancelText = 'Cancel'
+  confirmText = 'Konfirmasi',
+  cancelText = 'Batal'
 }) {
   if (!isOpen) return null;
 
@@ -23,14 +25,14 @@ export default function Modal({
         <div className="border-t border-gray-200 px-6 py-4 flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors font-medium text-sm"
           >
             {cancelText}
           </button>
           {onConfirm && (
             <button
               onClick={onConfirm}
-              className="px-4 py-2 bg-primary-light text-white rounded-lg hover:bg-primary-dark"
+              className="px-4 py-2 bg-[#22B2B0] text-white rounded-lg hover:bg-[#1E9E9D] transition-colors font-medium text-sm shadow-sm"
             >
               {confirmText}
             </button>
