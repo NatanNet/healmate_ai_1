@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import ilustrationHero from '../assets/Logo_healmateai.jpg';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -140,11 +141,10 @@ export default function LandingPage() {
 
             {/* Gambar Ilustrasi */}
             <div className="flex justify-center order-1 lg:order-2 relative">
-              <div className="relative w-full max-w-md">
-                {/* Aksen bulatan di belakang gambar */}
-                <div className="absolute inset-0 bg-[#0E3B3A]/30 rounded-full blur-3xl transform scale-110"></div>
+              <div className="relative w-64 w-80">
+                <div className="absolute inset-0 bg-[#0E3B3A]/30 rounded-full blur-3xl transform scale-110"></div>       
                 <img
-                  src="https://cdni.iconscout.com/illustration/premium/thumb/friendly-robot-helping-man-and-woman-4409384-3669147.png"
+                  src={ilustrationHero} 
                   alt="Ilustrasi HealMate AI"
                   className="relative w-full drop-shadow-2xl hover:scale-105 transition-transform duration-500 rounded-3xl"
                 />

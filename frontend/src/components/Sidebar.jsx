@@ -13,7 +13,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/landingpage');
     setShowLogoutModal(false);
   };
 
@@ -51,7 +51,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
             onClick={() => { navigate('/goals'); setIsSidebarOpen(false); }} 
             className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-colors ${isActive('/goals') ? 'bg-[#22B2B0]/20 text-white' : 'text-white/70 hover:bg-[#22B2B0]/10'}`}
           >
-            <i className="fas fa-leaf w-5"></i>
+            <i className="fas fa-bullseye w-5"></i>
             <span className="font-medium text-sm">Target Pemulihan</span>
           </button>
         </nav>
