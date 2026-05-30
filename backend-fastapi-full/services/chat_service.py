@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 load_dotenv() # <--- INI KUNCI AGAR API KEY GEMINI TERBACA!
 
 from typing import Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 import traceback
 import httpx
 from bson import ObjectId
@@ -33,7 +33,7 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
     """
     Process chat message:
     1. Kirim teks ke Ngrok untuk deteksi Emosi & Healing Score
-    2. Hasilkan balasan EKSKLUSIF menggunakan GEMINI
+    2. Hasilkan balasan EKSKLUSIF menggunakan GEMINI (DENGAN MEMORI 7 HARI)
     3. Save ke database
     """
     print(f"\n{'='*60}")
@@ -43,10 +43,10 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
     try:
         db = get_db()
         
+       # ==========================================
+        # STEP 1: DETEKSI EMOSI DARI HUGGING FACE API
         # ==========================================
-        # STEP 1: DETEKSI EMOSI DARI NGROK (COLAB)
-        # ==========================================
-        print(f"\n[STEP 1] Memanggil AI Colab ({AI_URL}/predict)...")
+        print(f"\n[STEP 1] Memanggil Model AI ({AI_URL}/predict)...")
         emotion = "anxiety" 
         confidence = 0.0
         healing_score = 0.5 
@@ -54,11 +54,11 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
         
         try:
             async with httpx.AsyncClient() as client:
+                # Memanggil API Hugging Face
                 ai_response = await client.post(
                     f"{AI_URL}/predict", 
                     json={"text": message}, 
-                    headers={"ngrok-skip-browser-warning": "true"},
-                    timeout=15.0 
+                    timeout=15.0 # 
                 )
                 
                 if ai_response.status_code == 200:
@@ -71,17 +71,42 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
                 else:
                     emotion, confidence = EmotionDetector.detect(message)
         except Exception as api_err:
-            print(f"Ngrok gagal: {api_err}")
+            print(f"API Model gagal: {api_err}")
             emotion, confidence = EmotionDetector.detect(message)
 
         # ==========================================
-        # STEP 2: BALASAN MURNI DARI GEMINI AI
+        # STEP 2: BALASAN MURNI DARI GEMINI AI (DENGAN MEMORI)
         # ==========================================
         print(f"\n[STEP 2] Meminta jawaban dari Gemini...")
         intent = ChatbotEngine._detect_intent(message) # Hanya ambil intent untuk data
         ai_response_text = ""
         
         if llm_model:
+            # --- LOGIKA MEMORI AI ---
+            # Mengambil maksimal 50 chat dalam 7 hari terakhir sebagai konteks ingatan
+            seven_days_ago = datetime.utcnow() - timedelta(days=7)
+            
+            recent_chats = list(db["chats"].find({
+                "userId": ObjectId(user_id),
+                "createdAt": {"$gte": seven_days_ago} 
+            }).sort("createdAt", -1).limit(50))
+            
+            # Membalikkan urutan agar chat terlama ada di atas, yang terbaru di bawah
+            recent_chats.reverse()
+            
+            # Merangkai memori menjadi teks untuk dibaca Gemini
+            history_text = ""
+            for chat in recent_chats:
+                if chat.get("intent") != "baseline": # Abaikan chat bayangan dari pop-up
+                    user_msg = chat.get("userMessage", "")
+                    ai_msg = chat.get("aiResponse", "")
+                    history_text += f"User: {user_msg}\nHealMate: {ai_msg}\n"
+            
+            # Jika belum ada riwayat (user baru)
+            if not history_text.strip():
+                history_text = "(Ini adalah awal obrolan, belum ada riwayat)"
+
+            # --- MENYUSUN PROMPT DENGAN MEMORI ---
             prompt = f"""
             Kamu adalah HealMate, asisten curhat AI yang suportif dan berempati.
             Tugasmu menemani user Gen-Z yang sedang melewati masa putus cinta.
@@ -90,12 +115,17 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
             - Sedang merasa: {emotion}
             - Tingkat pemulihan (Healing Score): {healing_score} (0.0=hancur, 1.0=ikhlas)
             
-            Pesan user: "{message}"
+            --- RIWAYAT OBROLAN 7 HARI TERAKHIR ---
+            {history_text}
+            ---------------------------------------
+            
+            Pesan user SEKARANG: "{message}"
             
             Instruksi Balasan:
-            1. Balas dengan bahasa Indonesia sehari-hari, gunakan "aku" dan "kamu".
-            2. Validasi perasaannya yang sedang '{emotion}' itu.
-            3. Jawab singkat saja 1-3 kalimat. Seperti chat teman di WhatsApp. Jangan pakai format list/bullet.
+            1. Perhatikan riwayat obrolan di atas agar nyambung. Jika user menyebut "dia", rujuk pada konteks riwayat sebelumnya.
+            2. Balas dengan bahasa Indonesia sehari-hari, gunakan "aku" dan "kamu".
+            3. Validasi perasaannya yang sedang '{emotion}' itu.
+            4. Jawab singkat saja 1-3 kalimat. Seperti chat teman di WhatsApp. Jangan pakai format list/bullet.
             """
             
             try:

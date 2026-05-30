@@ -132,10 +132,26 @@ export default function DashboardPage() {
 
 
           // Menjumlahkan skor dari KESELURUHAN riwayat chat user
+          // chats.forEach(chat => {
+          //   if (chat.healingScore !== undefined && chat.healingScore !== null) {
+          //     totalScore += chat.healingScore;
+          //     validChatCount++;
+          //   }
+          // });
+
+          // Menjumlahkan skor dari KESELURUHAN riwayat chat user
           chats.forEach(chat => {
             if (chat.healingScore !== undefined && chat.healingScore !== null) {
-              totalScore += chat.healingScore;
-              validChatCount++;
+              
+              // LOGIKA BARU: Memberikan "Bobot Jangkar" pada pilihan Pop-up awal
+              if (chat.intent === 'baseline') {
+                totalScore += (chat.healingScore * 20); // Dianggap setara 20 chat agar kuat!
+                validChatCount += 20;
+              } else {
+                totalScore += chat.healingScore;
+                validChatCount++;
+              }
+              
             }
           });
 
