@@ -313,11 +313,6 @@ export default function DashboardPage() {
                 </div>
 
               </div>
-
-              <p className="text-[#A7F3D0]/60 text-[9px] md:text-[10px] mt-4 flex items-center gap-1.5 opacity-70">
-                <i className="fas fa-info-circle"></i>
-                Dianalisis otomatis dari interaksi AI.
-              </p>
               
             </div>
           </div>
