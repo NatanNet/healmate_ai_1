@@ -24,26 +24,43 @@ export default function DashboardPage() {
     { day: 'Min', height: 0, type: 'empty' }
   ]);
 
+  // Fungsi Min-Max Scaling (Mengubah -0.5 s/d 1.0 menjadi 0-100)
+  const scaleHealingScore = (rawScore) => {
+    const clampedScore = Math.max(-0.5, Math.min(1.0, rawScore));
+    return Math.round(((clampedScore + 0.5) * 100) / 1.5);
+  };
+
+  // Mengubah fase menjadi 5 tingkatan sesuai gambar WhatsApp
   const getPhaseData = (progress) => {
-    if (progress < 35) return { 
-      name: 'Fase Marah & Kecewa', 
+    if (progress <= 20) return { 
+      name: 'Sangat Terluka', 
       color: 'text-[#FF6B6B]', 
-      desc: 'Sangat wajar jika kamu masih merasa marah atau tidak terima. Luapkan saja perlahan, HealMate ada di sini untuk mendengarkan.' 
+      desc: 'Sangat wajar jika kamu masih merasa hancur. Luapkan saja perlahan, HealMate ada di sini untuk mendengarkan.' 
     };
-    if (progress < 70) return { 
-      name: 'Fase Cemas & Ragu', 
+    if (progress <= 40) return { 
+      name: 'Memproses Luka', 
       color: 'text-[#FFB938]', 
-      desc: 'Kamu sedang berada di masa transisi. Kadang merasa kuat, kadang teringat lagi. Tetap bertahan, rasa cemas ini perlahan akan memudar.' 
+      desc: 'Kamu mulai memproses rasa sakit ini. Kadang merasa kuat, kadang teringat lagi. Bertahanlah, ini bagian dari proses.' 
+    };
+    if (progress <= 60) return { 
+      name: 'Mulai Pulih', 
+      color: 'text-[#FDE047]', 
+      desc: 'Rasa sakit itu mulai mereda. Kamu sudah bisa melihat hari depan dengan sedikit lebih tenang dan jernih.' 
+    };
+    if (progress <= 80) return { 
+      name: 'Bertumbuh', 
+      color: 'text-[#A7F3D0]', 
+      desc: 'Luar biasa! Kamu mulai menggunakan pengalaman ini untuk belajar dan menjadi versi dirimu yang lebih baik.' 
     };
     return { 
-      name: 'Fase Penerimaan', 
-      color: 'text-[#A7F3D0]', 
-      desc: 'Luar biasa. Kamu mulai bisa berdamai dengan keadaan. Terus melangkah maju, kamu sudah jauh lebih kuat dari sebelumnya.' 
+      name: 'Berdamai', 
+      color: 'text-[#22B2B0]', 
+      desc: 'Selamat, kamu telah berdamai dengan keadaan. Terus melangkah maju, kamu sudah jauh lebih kuat dari sebelumnya.' 
     };
   };
 
   const currentPhase = getPhaseData(healingProgress);
-
+  // Kunci pergerakan icon (dikurangi 4 agar icon tidak menembus batas UI)
   const safeProgress = Math.max(4, Math.min(96, healingProgress));
 
   useEffect(() => {
@@ -86,38 +103,34 @@ export default function DashboardPage() {
 
     const fetchHealingScore = async () => {
       try {
-        // 1. Ambil Skor Dasar AI (dari chat terakhir)
-        let aiScore = 0.1; // Default 10% jika belum pernah curhat
+        // 1. Ambil Skor Dasar AI (Nilai mentah: -0.5 sampai 1.0)
+        let aiRawScore = 0; // Default di tengah jika belum ada chat
         const chatResponse = await api.get('/chat/history?limit=1');
         
         if (chatResponse.data && chatResponse.data.chats && chatResponse.data.chats.length > 0) {
           const latestChat = chatResponse.data.chats[0];
           if (latestChat.healingScore !== undefined && latestChat.healingScore !== null) {
-            aiScore = latestChat.healingScore;
+            aiRawScore = latestChat.healingScore;
           }
         }
 
-        // 2. Ambil Poin Bonus Gamifikasi (dari profil user)
+        // --- TERAPKAN SCALING DI SINI ---
+        const scaledAiScore = scaleHealingScore(aiRawScore); // Hasilnya berupa angka 0 - 100
+
+        // 2. Ambil Poin Bonus Gamifikasi (dari penyelesaian Target Pemulihan)
         let bonusScore = 0;
         const profileResponse = await api.get('/auth/me');
-        
-        // Sesuaikan dengan struktur response dari me_service milikmu
-        // Biasanya datanya ada di profileResponse.data.user atau profileResponse.data.data
         const userData = profileResponse.data.user || profileResponse.data.data || profileResponse.data;
         
         if (userData && userData.healingBonus) {
           bonusScore = userData.healingBonus; 
         }
 
-        // 3. GABUNGKAN! (Skor AI + Bonus Target)
-        // Contoh: AI (0.65) + Bonus (0.04) = 0.69
-        let totalScoreDecimal = aiScore + bonusScore;
+        // 3. GABUNGKAN! (Skor AI yang sudah di-scale + Bonus Target)
+        let finalProgress = scaledAiScore + bonusScore;
         
-        // Jadikan persen (0.69 * 100 = 69%)
-        let finalProgress = totalScoreDecimal * 100;
-        
-        // Kunci maksimal di 100% agar ikon hati tidak bablas keluar jalur
-        if (finalProgress > 100) finalProgress = 100;
+        // Kunci maksimal di 100 agar UI Progress Bar tidak tembus berantakan
+        finalProgress = Math.max(0, Math.min(100, finalProgress));
 
         setHealingProgress(finalProgress);
       } catch (error) {
@@ -152,7 +165,6 @@ export default function DashboardPage() {
   return (
     <MainLayout>
       {/* --- BOX STATISTIK ATAS --- */}
-      {/* Mengurangi margin bottom dari mb-8 ke mb-5, gap-6 ke gap-4 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
         <button onClick={() => navigate('/chat')} className="bg-gradient-to-br from-[#22B2B0] to-[#1E9E9D] p-5 rounded-3xl flex flex-col justify-center items-center text-white shadow-md hover:scale-[1.02] transition-transform text-center">
           <div className="bg-white/20 w-10 h-10 rounded-xl flex items-center justify-center mb-2">
@@ -192,7 +204,6 @@ export default function DashboardPage() {
       </div>
 
       {/* --- SPEKTRUM PEMULIHAN --- */}
-    {/* --- SPEKTRUM PEMULIHAN --- */}
       <div className="bg-[#113C3A] p-5 md:p-6 rounded-3xl shadow-lg relative overflow-hidden mb-5 border border-[#22B2B0]/20">
         <div className="absolute top-0 right-0 w-48 h-48 bg-[#22B2B0]/10 rounded-full blur-[60px]"></div>
 
@@ -213,11 +224,13 @@ export default function DashboardPage() {
           <div className="flex-1 w-full pt-2 md:pt-0 pb-2 md:pb-0">
             <div className="relative w-full">
               
-              {/* Teks Label dipindah ke atas agar lebih rapi dan aman */}
-              <div className="flex justify-between text-[9px] md:text-[10px] font-bold mb-2 px-1">
-                <span className="text-[#FF6B6B] tracking-wide">MARAH</span>
-                <span className="text-[#FFB938] tracking-wide">CEMAS</span>
-                <span className="text-[#22B2B0] tracking-wide">PENERIMAAN</span>
+              {/* --- PERBAIKAN: SEKARANG MENAMPILKAN 5 LABEL FASE SECARA MERATA --- */}
+              <div className="grid grid-cols-5 text-[7px] sm:text-[9px] md:text-[10px] font-bold mb-2 text-center px-1">
+                <span className="text-[#FF6B6B] tracking-wide uppercase">Sangat Terluka</span>
+                <span className="text-[#FFB938] tracking-wide uppercase">Memproses Luka</span>
+                <span className="text-[#FDE047] tracking-wide uppercase">Mulai Pulih</span>
+                <span className="text-[#A7F3D0] tracking-wide uppercase">Bertumbuh</span>
+                <span className="text-[#22B2B0] tracking-wide uppercase">Berdamai</span>
               </div>
 
               {/* Trek Bar Utama */}
@@ -226,15 +239,15 @@ export default function DashboardPage() {
                 {/* Warna Gradient Dasar */}
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-[#FF6B6B] via-[#FFB938] to-[#22B2B0] opacity-90 shadow-[0_0_10px_rgba(255,185,56,0.2)]"></div>
 
-                {/* Trik CSS: Area pergerakan dikurangi (right-8) agar icon w-8 (32px) tidak pernah bocor keluar batas */}
-                <div className="absolute inset-0 ">
-  <div
-    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-[#113C3A] rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(34,178,176,0.6)] border-2 border-[#A7F3D0] transition-all duration-1000 ease-out z-20"
-    style={{ left: `${safeProgress}%` }}
-  >
-    <i className="fas fa-heart text-[#A7F3D0] text-xs animate-pulse"></i>
-  </div>
-</div>
+                {/* Titik Icon Hati */}
+                <div className="absolute inset-0">
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 bg-[#113C3A] rounded-full flex items-center justify-center shadow-[0_0_10px_rgba(34,178,176,0.6)] border-2 border-[#A7F3D0] transition-all duration-1000 ease-out z-20"
+                    style={{ left: `${safeProgress}%` }}
+                  >
+                    <i className="fas fa-heart text-[#A7F3D0] text-xs animate-pulse"></i>
+                  </div>
+                </div>
 
               </div>
 
@@ -250,7 +263,6 @@ export default function DashboardPage() {
       </div>
 
       {/* --- DESAIN GRAFIK EMOSI & KAPSUL --- */}
-      {/* Mengurangi gap antar kolom dari gap-6 ke gap-4 */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         <div className="lg:col-span-2 bg-white border border-gray-100 rounded-3xl p-5 shadow-sm flex flex-col">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
@@ -262,7 +274,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Mengurangi tinggi area grafik dari 240px ke 180px */}
           <div className="flex items-end justify-between px-2 md:px-6 bg-[#F9FAFA] rounded-2xl p-4 border border-gray-50 h-[180px]">
             {moodData.map((data, idx) => (
               <div key={idx} className="flex flex-col items-center justify-end w-full h-full gap-1.5">
@@ -281,7 +292,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Mengurangi min-height dari 330px ke 260px */}
         <div className="bg-white border border-gray-100 rounded-3xl p-5 shadow-sm flex flex-col min-h-[260px]">
           <h3 className="font-bold text-gray-800 text-sm mb-3">Kapsul Menunggu</h3>
           <div className="space-y-3 overflow-y-auto max-h-[190px] pr-1 flex-1">

@@ -57,6 +57,7 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
                 ai_response = await client.post(
                     f"{AI_URL}/predict", 
                     json={"text": message}, 
+                    headers={"ngrok-skip-browser-warning": "true"},
                     timeout=15.0 
                 )
                 
