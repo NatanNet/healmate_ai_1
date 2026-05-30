@@ -127,7 +127,7 @@ export default function LandingPage() {
                   onClick={() => navigate('/login')}
                   className="px-8 py-3.5 bg-white text-[#147A77] font-bold rounded-full shadow-lg shadow-black/10 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 text-base hover:bg-gray-50"
                 >
-                  <i className="fas fa-rocket"></i> Mulai Sekarang
+                  <i className="fas fa-robot"></i> Mulai Sekarang
                 </button>
                 {/* Tombol Pelajari Lanjut */}
                 <a

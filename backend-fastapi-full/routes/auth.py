@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from schemas.auth_schema import RegisterRequest, LoginRequest
+from schemas.auth_schema import RegisterRequest, LoginRequest, BaselineRequest
 from middleware.auth import get_current_user
 from services.auth_service import *
 
@@ -24,3 +24,10 @@ user_id:str=Depends(get_current_user)
 ):
 
     return await me_service(user_id)
+
+@router.post("/baseline")
+async def set_baseline(
+    req: BaselineRequest, 
+    user_id: str = Depends(get_current_user)
+):
+    return await set_baseline_service(user_id, req)

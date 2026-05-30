@@ -10,3 +10,8 @@ class RegisterRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+    
+   # untuk spectrum saya
+class BaselineRequest(BaseModel):
+    phaseName: str
+    healingScore: float

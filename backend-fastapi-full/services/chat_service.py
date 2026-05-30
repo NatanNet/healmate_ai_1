@@ -106,7 +106,7 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
                 print(f"Gemini Error: {e}")
                 ai_response_text = "Maaf ya, server lagi gangguan sebentar. Kamu mau cerita lagi?"
         else:
-            ai_response_text = "API Key Gemini belum dipasang di sistem. cek .env!"
+            ai_response_text = "API Key belum dipasang di sistem. cek .env!"
 
         # ==========================================
         # STEP 3: SIMPAN KE MONGODB

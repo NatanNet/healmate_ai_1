@@ -131,7 +131,7 @@ export default function ChatPage() {
                     <div className="flex flex-col items-start gap-1">
                       {chat.emotion && (
                         <span className="text-[10px] md:text-xs text-gray-400 ml-2">
-                          AI mendeteksi: {terjemahkanEmosi(chat.emotion)}
+                          Deteksi Emosi: {terjemahkanEmosi(chat.emotion)}
                         </span>
                       )}
                       <div className="bg-white border border-gray-100 text-gray-700 px-4 md:px-5 py-3 md:py-3.5 rounded-2xl rounded-tl-sm max-w-[85%] md:max-w-[70%] shadow-sm text-sm leading-relaxed">

@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const [waitingCapsules, setWaitingCapsules] = useState([]);
   const [goalsStats, setGoalsStats] = useState({ completed: 0, total: 0 });
   const [healingProgress, setHealingProgress] = useState(45); 
+  const [showBaselineModal, setShowBaselineModal] = useState(false);
 
   const [moodData, setMoodData] = useState([
     { day: 'Sen', height: 0, type: 'empty' },
@@ -23,6 +24,20 @@ export default function DashboardPage() {
     { day: 'Sab', height: 0, type: 'empty' },
     { day: 'Min', height: 0, type: 'empty' }
   ]);
+
+  const handleBaselineSelect = async (phaseName, rawScore) => {
+    try {
+      await api.post('/auth/baseline', {
+        phaseName: phaseName,
+        healingScore: rawScore
+      });
+      
+      setShowBaselineModal(false);
+      window.location.reload(); 
+    } catch (error) {
+      console.error("Gagal menyimpan data fase awal:", error);
+    }
+  };
 
   // Fungsi Min-Max Scaling (Mengubah -0.5 s/d 1.0 menjadi 0-100)
   const scaleHealingScore = (rawScore) => {
@@ -103,19 +118,40 @@ export default function DashboardPage() {
 
     const fetchHealingScore = async () => {
       try {
-        // 1. Ambil Skor Dasar AI (Nilai mentah: -0.5 sampai 1.0)
-        let aiRawScore = 0; // Default di tengah jika belum ada chat
-        const chatResponse = await api.get('/chat/history?limit=1');
+        // 1. Ambil Skor Dasar AI (Nilai mentah: -0.5 sampai 1.0) logika healingscore
+        // let aiRawScore = 0; // Default di tengah jika belum ada chat
+        let averageAiScore = 0;
+        const chatResponse = await api.get('/chat/history?limit=10000');
         
         if (chatResponse.data && chatResponse.data.chats && chatResponse.data.chats.length > 0) {
-          const latestChat = chatResponse.data.chats[0];
-          if (latestChat.healingScore !== undefined && latestChat.healingScore !== null) {
-            aiRawScore = latestChat.healingScore;
+          // const latestChat = chatResponse.data.chats[0];
+          const chats = chatResponse.data.chats;
+
+          let totalScore = 0;
+          let validChatCount = 0;
+
+
+          // Menjumlahkan skor dari KESELURUHAN riwayat chat user
+          chats.forEach(chat => {
+            if (chat.healingScore !== undefined && chat.healingScore !== null) {
+              totalScore += chat.healingScore;
+              validChatCount++;
+            }
+          });
+
+          // Menghitung nilai rata-rata seumur hidup (Lifetime Average)
+          if (validChatCount > 0) {
+            averageAiScore = totalScore / validChatCount;
           }
         }
+        //   if (latestChat.healingScore !== undefined && latestChat.healingScore !== null) {
+        //     aiRawScore = latestChat.healingScore;
+        //   }
+        // }
 
         // --- TERAPKAN SCALING DI SINI ---
-        const scaledAiScore = scaleHealingScore(aiRawScore); // Hasilnya berupa angka 0 - 100
+        // const scaledAiScore = scaleHealingScore(aiRawScore); // Hasilnya berupa angka 0 - 100
+          const scaledAiScore = scaleHealingScore(averageAiScore);
 
         // 2. HITUNG BONUS LANGSUNG DARI TO-DO LIST YANG SELESAI
         // (Ini yang membuat progress bar-mu langsung bergerak saat dicentang!)
@@ -128,6 +164,13 @@ export default function DashboardPage() {
           
           // Setiap tugas yang dicentang memberi bonus 5 poin (silakan ubah angkanya kalau kurang besar)
           bonusScore = completedCount * 5; 
+        }
+
+        // --- TAMBAHKAN PENGECEKAN BASELINE DI SINI ---
+        const profileResponse = await api.get('/auth/me');
+        const userData = profileResponse.data;
+        if (userData && userData.hasSetBaseline === false) {
+          setShowBaselineModal(true); // Memunculkan Pop-up
         }
 
         // 3. GABUNGKAN! (Skor AI yang sudah di-scale + Bonus Target)
@@ -319,6 +362,49 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* --- MODAL PENILAIAN FASE AWAL (BASELINE) --- */}
+      {showBaselineModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A2423]/80 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl relative">
+            
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-[#E8F6F6] text-[#22B2B0] rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+                <i className="fas fa-heart-pulse"></i>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Selamat Datang di HealMate</h2>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                Agar AI kami bisa menemanimu dengan akurat, ceritakan sejujurnya di fase mana kamu merasa berada saat ini?
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {/* Tombol dengan nilai yang sudah disesuaikan agar pas dengan skala 0-100% */}
+              <button onClick={() => handleBaselineSelect('Sangat Terluka', -0.5)} className="w-full text-left px-5 py-3.5 rounded-2xl border border-gray-100 bg-[#FF6B6B]/10 hover:bg-[#FF6B6B]/20 text-[#FF6B6B] font-bold transition-all flex justify-between items-center group">
+                <span>Sangat Terluka</span> <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+              </button>
+              
+              <button onClick={() => handleBaselineSelect('Memproses Luka', -0.125)} className="w-full text-left px-5 py-3.5 rounded-2xl border border-gray-100 bg-[#FFB938]/10 hover:bg-[#FFB938]/20 text-[#FFB938] font-bold transition-all flex justify-between items-center group">
+                <span>Memproses Luka</span> <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+              </button>
+              
+              <button onClick={() => handleBaselineSelect('Mulai Pulih', 0.25)} className="w-full text-left px-5 py-3.5 rounded-2xl border border-gray-100 bg-[#FDE047]/20 hover:bg-[#FDE047]/40 text-[#D97706] font-bold transition-all flex justify-between items-center group">
+                <span>Mulai Pulih</span> <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+              </button>
+              
+              <button onClick={() => handleBaselineSelect('Bertumbuh', 0.625)} className="w-full text-left px-5 py-3.5 rounded-2xl border border-gray-100 bg-[#A7F3D0]/30 hover:bg-[#A7F3D0]/50 text-[#059669] font-bold transition-all flex justify-between items-center group">
+                <span>Bertumbuh</span> <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+              </button>
+              
+              <button onClick={() => handleBaselineSelect('Berdamai', 1.0)} className="w-full text-left px-5 py-3.5 rounded-2xl border border-gray-100 bg-[#22B2B0]/10 hover:bg-[#22B2B0]/20 text-[#22B2B0] font-bold transition-all flex justify-between items-center group">
+                <span>Berdamai</span> <i className="fas fa-arrow-right opacity-0 group-hover:opacity-100 transition-opacity"></i>
+              </button>
+            </div>
+            
+          </div>
+        </div>
+      )}
+      {/* --- AKHIR MODAL --- */}
     </MainLayout>
   );
 }

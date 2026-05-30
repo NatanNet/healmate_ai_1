@@ -7,55 +7,38 @@ from fastapi import HTTPException
 
 
 async def register_service(req):
+    db = get_db()
+    users = db["users"]
 
-    db=get_db()
-
-    users=db["users"]
-
-    existing=users.find_one({
-
-        "$or":[
-
-            {"email":req.email},
-            {"username":req.username}
-
+    existing = users.find_one({
+        "$or": [
+            {"email": req.email},
+            {"username": req.username}
         ]
-
     })
 
     if existing:
-
         raise HTTPException(
             status_code=409,
             detail="User already exists"
         )
 
-
-    hashed=bcrypt.hashpw(
-
+    hashed = bcrypt.hashpw(
         req.password.encode(),
         bcrypt.gensalt()
-
     ).decode()
 
-
-    user_doc={
-
-        "username":req.username,
-        "email":req.email,
-        "password":hashed,
-        "fullName":req.fullName,
-        "createdAt":datetime.now(timezone.utc)
-
+    user_doc = {
+        "username": req.username,
+        "email": req.email,
+        "password": hashed,
+        "fullName": req.fullName,
+        "createdAt": datetime.now(timezone.utc),
+        "hasSetBaseline": False,
     }
 
-    result=users.insert_one(
-        user_doc
-    )
-
-    token=create_token(
-        str(result.inserted_id)
-    )
+    result = users.insert_one(user_doc)
+    token = create_token(str(result.inserted_id))
 
     return {
         "status": "success",
@@ -118,10 +101,45 @@ async def me_service(user_id: str):
             "username": user.get("username", ""),
             "fullName": user.get("fullName", ""),
             "createdAt": user.get("createdAt", ""),
-            "healingBonus": user.get("healingBonus", 0.0) 
+            "healingBonus": user.get("healingBonus", 0.0),
+            "hasSetBaseline": user.get("hasSetBaseline", False)
         }
+        
     except Exception as e:
         raise HTTPException(
             status_code=400,
             detail=str(e)
         )
+
+
+async def set_baseline_service(user_id: str, req):
+    """Menyimpan fase awal user dan membuat chat bayangan untuk titik start UI"""
+    db = get_db()
+    users = db["users"]
+    chats = db["chats"]
+    
+    # 1. Ubah status hasSetBaseline menjadi True agar pop-up tidak muncul lagi
+    users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": {"hasSetBaseline": True}}
+    )
+    
+    # 2. Buat "Chat Bayangan" untuk Baseline (DISAMAKAN 100% DENGAN CHAT_SERVICE)
+    dummy_chat = {
+        "userId": ObjectId(user_id), # SUDAH DIPERBAIKI (camelCase)
+        "userMessage": f"Saya merasa sedang berada di fase: {req.phaseName}",
+        "messageEN": "Initial baseline assessment", # Tambahan agar skema kembar
+        "aiResponse": "Terima kasih sudah jujur dengan perasaanmu. Mari kita mulai proses pemulihan ini perlahan-lahan bersama HealMate.",
+        # "emotion": "acceptance",
+        # "confidence": 1.0,
+        "intent": "baseline", # Tambahan agar skema kembar
+        "healingScore": req.healingScore,
+        "createdAt": datetime.utcnow() # SUDAH DIPERBAIKI (Pakai datetime object)
+    }
+    
+    chats.insert_one(dummy_chat)
+    
+    return {
+        "status": "success", 
+        "message": "Titik mulai pemulihan berhasil diatur"
+    }

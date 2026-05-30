@@ -11,7 +11,8 @@ async def calculate_weekly_emotion(user_id: str):
 
     cursor = db["chats"].find({
         "userId": ObjectId(user_id),
-        "createdAt": {"$gte": seven_days_ago}
+        "createdAt": {"$gte": seven_days_ago},
+        "inten":{"$ne": "baseline"} # Pastikan tidak menghitung chat dengan intent "baseline"
     })
     
     chats = list(cursor)
@@ -25,7 +26,7 @@ async def calculate_weekly_emotion(user_id: str):
         created_at = chat.get("createdAt") 
         
         if emotion and created_at:
-            # Wajib ditambah 7 jam agar akurat dengan jam WIB (Gen-Z Indonesia)
+            # Wajib ditambah 7 jam agar akurat dengan jam WIB 
             dt_wib = created_at + timedelta(hours=7)
             day_name = days_map[dt_wib.weekday()]
             weekly_data[day_name].append(emotion.lower())
