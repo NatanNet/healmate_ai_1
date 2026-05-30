@@ -117,7 +117,8 @@ async def me_service(user_id: str):
             "email": user["email"],
             "username": user.get("username", ""),
             "fullName": user.get("fullName", ""),
-            "createdAt": user.get("createdAt", "")
+            "createdAt": user.get("createdAt", ""),
+            "healingBonus": user.get("healingBonus", 0.0) 
         }
     except Exception as e:
         raise HTTPException(
