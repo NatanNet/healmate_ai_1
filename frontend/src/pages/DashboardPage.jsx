@@ -117,13 +117,17 @@ export default function DashboardPage() {
         // --- TERAPKAN SCALING DI SINI ---
         const scaledAiScore = scaleHealingScore(aiRawScore); // Hasilnya berupa angka 0 - 100
 
-        // 2. Ambil Poin Bonus Gamifikasi (dari penyelesaian Target Pemulihan)
+        // 2. HITUNG BONUS LANGSUNG DARI TO-DO LIST YANG SELESAI
+        // (Ini yang membuat progress bar-mu langsung bergerak saat dicentang!)
         let bonusScore = 0;
-        const profileResponse = await api.get('/auth/me');
-        const userData = profileResponse.data.user || profileResponse.data.data || profileResponse.data;
+        const goals = await goalService.getGoals();
         
-        if (userData && userData.healingBonus) {
-          bonusScore = userData.healingBonus; 
+        if (Array.isArray(goals)) {
+          // Hitung berapa jumlah tugas yang statusnya sudah dicentang/completed
+          const completedCount = goals.filter(g => g.status === 'completed' || g.progress === 100).length;
+          
+          // Setiap tugas yang dicentang memberi bonus 5 poin (silakan ubah angkanya kalau kurang besar)
+          bonusScore = completedCount * 5; 
         }
 
         // 3. GABUNGKAN! (Skor AI yang sudah di-scale + Bonus Target)
