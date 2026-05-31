@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useChatStore } from '../stores/chatStore';
 import chatService from '../services/chatService';
 import MainLayout from '../components/MainLayout';
+import goalService from '../services/goalService';
 
 export default function ChatPage() {
   const { setLoading, loading } = useChatStore();
@@ -9,6 +10,9 @@ export default function ChatPage() {
 
   const [message, setMessage] = useState('');
   const [localChats, setLocalChats] = useState([]); 
+
+  // untuk mengingat daftar saran
+  const [expandedSuggestions, setExpandedSuggestions] = useState({});
   
   // PERBAIKAN: Gunakan ref untuk wadah obrolan, bukan untuk pesan terakhir
   const chatContainerRef = useRef(null);
@@ -16,10 +20,11 @@ export default function ChatPage() {
   useEffect(() => {
     fetchChatHistory();
   }, []);
+  
 
   useEffect(() => {
     scrollToBottom();
-  }, [localChats]);
+  }, [localChats, loading]);
 
   const scrollToBottom = () => {
     // PERBAIKAN: Menggulirkan isi di dalam kotak saja, tidak menarik layar utama
@@ -87,6 +92,24 @@ export default function ChatPage() {
     }
   };
 
+  const handleAddSuggestionToGoals = async (suggestionText) => {
+    try {
+      await goalService.createGoal(suggestionText);
+      alert('Aktifitas saran ditambahkan ke Target Pemulihan. Cek di halaman Target Pemulihan!');
+    } catch (error) {
+      console.error('Gagal menambahkan saran ke Target Pemulihan:', error);
+      alert('Gagal menambahkan saran ke target pemulihan. Silakan coba lagi!');
+    }
+  };
+
+  // fungsi untuk buka tutup daftar saran
+  const toggleSuggestions = (chatIndex) => {
+    setExpandedSuggestions((prev) => ({
+      ...prev,
+      [chatIndex]: !prev[chatIndex] 
+    }));
+  };
+
   return (
     <MainLayout>
       <div className="flex-1 bg-white rounded-2xl md:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col overflow-hidden relative h-[80vh] md:h-[85vh]">
@@ -135,7 +158,45 @@ export default function ChatPage() {
                         </span>
                       )}
                       <div className="bg-white border border-gray-100 text-gray-700 px-4 md:px-5 py-3 md:py-3.5 rounded-2xl rounded-tl-sm max-w-[85%] md:max-w-[70%] shadow-sm text-sm leading-relaxed">
-                        {chat.aiResponse}
+                        <p>{chat.aiResponse}</p>
+
+                        {/* ==========================================
+                            [PERBARUAN] FITUR TOMBOL BUKA/TUTUP SARAN
+                            ========================================== */}
+                        {chat.activitySuggestions && chat.activitySuggestions.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-gray-100">
+                            
+                            {/* Tombol Pemicu (Trigger Button) */}
+                            <button
+                              onClick={() => toggleSuggestions(idx)}
+                              className="text-[11px] sm:text-xs font-medium text-[#22B2B0] bg-[#E8F6F6] hover:bg-[#D0EFEF] px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-colors shadow-sm"
+                            >
+                              <i className={`fas fa-lightbulb ${expandedSuggestions[idx] ? 'text-yellow-500' : ''}`}></i>
+                              {expandedSuggestions[idx] 
+                                ? 'Sembunyikan Saran' 
+                                : `Lihat ${chat.activitySuggestions.length} Saran Aktivitas`}
+                              <i className={`fas fa-chevron-${expandedSuggestions[idx] ? 'up' : 'down'} ml-1 text-[10px]`}></i>
+                            </button>
+
+                            {/* Daftar Saran Aktivitas (Hanya tampil jika ditekan) */}
+                            {expandedSuggestions[idx] && (
+                              <div className="flex flex-wrap gap-2 mt-3 animate-fade-in-down">
+                                {chat.activitySuggestions.map((suggestion, sugIdx) => (
+                                  <button
+                                    key={sugIdx}
+                                    onClick={() => handleAddSuggestionToGoals(suggestion)}
+                                    className="text-[10px] sm:text-[11px] bg-white border border-[#22B2B0]/40 text-gray-600 px-3 py-1.5 rounded-full hover:bg-[#22B2B0] hover:text-white hover:border-[#22B2B0] transition-all duration-300 flex items-center gap-1.5 shadow-sm group text-left"
+                                  >
+                                    <i className="fas fa-plus text-[#22B2B0] group-hover:text-white transition-colors"></i> 
+                                    <span>{suggestion}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
+                          </div>
+                        )}
+                        {/* ========================================== */}
                       </div>
                     </div>
                   )}
@@ -144,6 +205,16 @@ export default function ChatPage() {
             </div>
           )}
         </div>
+
+        {loading && (
+                <div className="flex flex-col items-start gap-1">
+                  <div className="bg-white border border-gray-100 px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5 w-fit">
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                  </div>
+                </div>
+              )}
 
         {/* Form Input */}
         <form onSubmit={handleSendMessage} className="p-3 md:p-4 bg-white border-t border-gray-50 shrink-0">
