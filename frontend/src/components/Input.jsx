@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 export default function Input({
   type = 'text',
@@ -12,6 +13,7 @@ export default function Input({
   ...props
 }) {
   const [showPassword, setShowPassword] = useState(false);
+
   const isPasswordField = type === 'password';
   const inputType = isPasswordField && showPassword ? 'text' : type;
 
@@ -22,49 +24,79 @@ export default function Input({
           {label}
         </label>
       )}
-      <div className="relative">
+
+      <div
+        className={`
+          flex items-center w-full rounded-lg border bg-white
+          transition-all duration-200
+          focus-within:ring-2 focus-within:ring-[#22B2B0]
+          focus-within:border-[#22B2B0]
+          ${error ? 'border-red-500' : 'border-gray-300'}
+          ${disabled ? 'bg-gray-100 cursor-not-allowed' : ''}
+          ${className}
+        `}
+      >
+        {/* Input */}
         <input
           type={inputType}
           placeholder={placeholder}
           value={value}
           onChange={onChange}
           disabled={disabled}
-          className={`
-            w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-light
-            ${error ? 'border-red-500' : 'border-gray-300'}
-            ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
-            ${isPasswordField ? 'pr-10' : ''}
-            ${className}
-          `}
+          className="
+            flex-1
+            px-4
+            py-3
+            bg-transparent
+            outline-none
+            border-none
+            text-gray-900
+            placeholder:text-gray-400
+            disabled:cursor-not-allowed
+          "
           {...props}
         />
+
+        {/* Tombol Mata */}
         {isPasswordField && (
           <button
             type="button"
-            onClick={() => setShowPassword(!showPassword)}
+            onClick={() => setShowPassword((prev) => !prev)}
             disabled={disabled}
-
-            autoComplete={isPasswordField ? "new-password" : "off"}
-          data-lpignore="true" /* Mengusir ikon LastPass */
-          data-1p-ignore="true" /* Mengusir ikon 1Password */
-          spellCheck="false"
-
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 disabled:text-gray-400"
+            className="
+              flex
+              items-center
+              justify-center
+              w-12
+              h-12
+              border-l
+              border-gray-200
+              text-gray-500
+              hover:text-[#22B2B0]
+              transition-colors
+              disabled:text-gray-400
+              disabled:cursor-not-allowed
+            "
+            aria-label={
+              showPassword
+                ? 'Sembunyikan password'
+                : 'Tampilkan password'
+            }
           >
             {showPassword ? (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-4.803m5.596-3.856a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0c0 1.657-.672 3.157-1.757 4.243A6 6 0 0121 12a6 6 0 00-6-6 6 6 0 00-4.243 1.757M9 21H7.5a1.5 1.5 0 01-1.5-1.5V5.5A1.5 1.5 0 017.5 4h9A1.5 1.5 0 0118 5.5v12" />
-              </svg>
+              <FiEye size={20} />
             ) : (
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
+              <FiEyeOff size={20} />
             )}
           </button>
         )}
       </div>
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+
+      {error && (
+        <p className="text-red-500 text-sm mt-1">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
