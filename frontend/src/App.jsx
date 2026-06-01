@@ -14,7 +14,7 @@ import GoalsPage from './pages/GoalsPage';
 
 export default function App() {
   const { token } = useAuthStore();
-
+  
   return (
     <Router>
       <Routes>

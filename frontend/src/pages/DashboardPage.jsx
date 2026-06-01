@@ -287,13 +287,39 @@ export default function DashboardPage() {
           <div className="flex-1 w-full pt-2 md:pt-0 pb-2 md:pb-0">
             <div className="relative w-full">
               
-              {/* --- PERBAIKAN: SEKARANG MENAMPILKAN 5 LABEL FASE SECARA MERATA --- */}
-              <div className="grid grid-cols-5 text-[7px] sm:text-[9px] md:text-[10px] font-bold mb-2 text-center px-1">
+              {/* <div className="grid grid-cols-5 text-[7px] sm:text-[9px] md:text-[10px] font-bold mb-2 text-center px-1">
                 <span className="text-[#FF6B6B] tracking-wide uppercase">Sangat Terluka</span>
                 <span className="text-[#FFB938] tracking-wide uppercase">Memproses Luka</span>
                 <span className="text-[#FDE047] tracking-wide uppercase">Mulai Pulih</span>
                 <span className="text-[#A7F3D0] tracking-wide uppercase">Bertumbuh</span>
                 <span className="text-[#22B2B0] tracking-wide uppercase">Berdamai</span>
+              </div> */}
+              <div className="flex justify-between w-full mb-2 px-1">
+                <div className="flex-1 text-center">
+                  <span className="text-[7px] sm:text-[9px] md:text-[10px] font-bold text-[#FF6B6B] tracking-wide uppercase block leading-tight">
+                    SANGAT<br className="block md:hidden"/> TERLUKA
+                  </span>
+                </div>
+                <div className="flex-1 text-center">
+                  <span className="text-[7px] sm:text-[9px] md:text-[10px] font-bold text-[#FFB938] tracking-wide uppercase block leading-tight">
+                    MEMPROSES<br className="block md:hidden"/> LUKA
+                  </span>
+                </div>
+                <div className="flex-1 text-center">
+                  <span className="text-[7px] sm:text-[9px] md:text-[10px] font-bold text-[#FDE047] tracking-wide uppercase block leading-tight">
+                    MULAI<br className="block md:hidden"/> PULIH
+                  </span>
+                </div>
+                <div className="flex-1 text-center">
+                  <span className="text-[7px] sm:text-[9px] md:text-[10px] font-bold text-[#A7F3D0] tracking-wide uppercase block leading-tight">
+                    BERTUMBUH
+                  </span>
+                </div>
+                <div className="flex-1 text-center">
+                  <span className="text-[7px] sm:text-[9px] md:text-[10px] font-bold text-[#22B2B0] tracking-wide uppercase block leading-tight">
+                    BERDAMAI
+                  </span>
+                </div>
               </div>
 
               {/* Trek Bar Utama */}

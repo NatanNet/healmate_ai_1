@@ -31,3 +31,44 @@ html, body, #root {
     @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-primary-light;
   }
 }
+
+/* input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-contacts-auto-fill-button,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+  visibility: hidden;
+  pointer-events: none;
+} */
+
+/* Untuk Microsoft Edge */
+input[type="password"]::-ms-reveal {
+  display: none !important;
+}
+
+input[type="password"]::-ms-clear {
+  display: none !important;
+}
+
+/* Untuk Google Chrome & Password Manager */
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+input[type="password"]::-webkit-contacts-auto-fill-button {
+  display: none !important;
+  visibility: hidden;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+}
+
+/* Menghapus gaya bawaan Safari/iOS */
+input[type="password"] {
+  -webkit-appearance: none;
+  appearance: none;
+}

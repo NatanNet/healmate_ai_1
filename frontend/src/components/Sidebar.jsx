@@ -38,7 +38,7 @@ export default function Sidebar({ isSidebarOpen, setIsSidebarOpen }) {
             className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-colors ${isActive('/dashboard') || isActive('/') ? 'bg-[#22B2B0]/20 text-white' : 'text-white/70 hover:bg-[#22B2B0]/10'}`}
           >
             <i className="fas fa-home w-5"></i>
-            <span className="font-medium text-sm">Beranda</span>
+            <span className="font-medium text-sm">Dasbor</span>
           </button>
           <button 
             onClick={() => { navigate('/capsule'); setIsSidebarOpen(false); }} 

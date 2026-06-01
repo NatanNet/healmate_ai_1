@@ -43,6 +43,12 @@ export default function Input({
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             disabled={disabled}
+
+            autoComplete={isPasswordField ? "new-password" : "off"}
+          data-lpignore="true" /* Mengusir ikon LastPass */
+          data-1p-ignore="true" /* Mengusir ikon 1Password */
+          spellCheck="false"
+
             className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-800 disabled:text-gray-400"
           >
             {showPassword ? (

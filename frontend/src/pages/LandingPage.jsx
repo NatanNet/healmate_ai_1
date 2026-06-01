@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import ilustrationHero from '../assets/Logo_healmateai.jpg';
+import ilustrationHero from '../assets/LogoHealmateAI.png';
 
 export default function LandingPage() {
   const navigate = useNavigate();
