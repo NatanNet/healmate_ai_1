@@ -47,7 +47,7 @@ export default function RegisterPage() {
         formData.fullName
       );
 
-      // Setelah berhasil daftar, arahkan ke login
+      // Setelah berhasil daftar,mengarah ke Login
       navigate('/login');
     } catch (err) {
       setError(err.message || 'Pendaftaran gagal. Silakan coba lagi.');

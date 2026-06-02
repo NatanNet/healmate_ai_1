@@ -72,7 +72,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     #allow_origins=["*"],  # TODO: Update untuk production
-     allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:5173", "https://healmate-ai-1.vercel.app"],
+     allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:5173", "https://healmate-ai-1.vercel.app", "https://healmate-ai-1-3lhodu244-heal-mate-ai-s-projects.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -51,7 +51,7 @@ export default function GoalsPage() {
     }
   };
 
-  // --- FUNGSI BARU: HAPUS ---
+  // Fungsi untuk hapus
   const handleDelete = async (goalId) => {
     if (!window.confirm('Yakin ingin menghapus target ini?')) return;
     try {
@@ -62,7 +62,7 @@ export default function GoalsPage() {
     }
   };
 
-  // --- FUNGSI BARU: EDIT ---
+  // Fungsi untuk edit
   const handleEdit = async (goal) => {
     const newTitle = window.prompt("Edit Target Pemulihan:", goal.title);
     if (newTitle !== null && newTitle.trim() !== "" && newTitle !== goal.title) {

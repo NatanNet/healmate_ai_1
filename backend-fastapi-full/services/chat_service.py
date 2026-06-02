@@ -52,13 +52,17 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
         healing_score = 0.5 
         message_en = message
         
+        #tambahan
+        counselor_response = ""
+        activity_suggestions = []
+        
         try:
             async with httpx.AsyncClient() as client:
                 # Memanggil API Hugging Face
                 ai_response = await client.post(
                     f"{AI_URL}/predict", 
                     json={"text": message}, 
-                    timeout=15.0 # 
+                    timeout=15.0 # proses kirim chat ke sistem
                 )
                 
                 if ai_response.status_code == 200:
@@ -67,6 +71,11 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
                     confidence = ai_result.get("confidence", 0.0)
                     healing_score = ai_result.get("healing_score", 0.5)
                     message_en = ai_result.get("text_english", message)
+                    
+                    # update 31 mei terbaru
+                    counselor_response = ai_result.get("counselor_response", "")
+                    activity_suggestions = ai_result.get("activity_suggestions", [])
+                    
                     print(f"✓ Berhasil ambil data -> Emotion: {emotion} | Score: {healing_score}")
                 else:
                     emotion, confidence = EmotionDetector.detect(message)
@@ -82,14 +91,14 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
         ai_response_text = ""
         
         if llm_model:
-            # --- LOGIKA MEMORI AI ---
+            # LOGIKA MEMORI AI untuk Menyimpan history chat
             # Mengambil maksimal 50 chat dalam 7 hari terakhir sebagai konteks ingatan
             seven_days_ago = datetime.utcnow() - timedelta(days=7)
             
             recent_chats = list(db["chats"].find({
                 "userId": ObjectId(user_id),
                 "createdAt": {"$gte": seven_days_ago} 
-            }).sort("createdAt", -1).limit(50))
+            }).sort("createdAt", -1).limit(50))  # Limit 50 adalah jumlah chatnya, tak buat 50 karena supaya tidak keberatan memorinya
             
             # Membalikkan urutan agar chat terlama ada di atas, yang terbaru di bawah
             recent_chats.reverse()
@@ -108,12 +117,17 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
 
             # --- MENYUSUN PROMPT DENGAN MEMORI ---
             prompt = f"""
-            Kamu adalah HealMate, asisten curhat AI yang suportif dan berempati.
+            Kamu adalah HealMate — konselor digital yang hangat, empatik, dan non-judgmental, 
+            khusus mendampingi orang yang sedang pulih dari putus cinta
             Tugasmu menemani user Gen-Z yang sedang melewati masa putus cinta.
             
             Kondisi User Saat Ini:
             - Sedang merasa: {emotion}
             - Tingkat pemulihan (Healing Score): {healing_score} (0.0=hancur, 1.0=ikhlas)
+            - Saran respon dari psikologi: "counselor_response" = "{counselor_response}"
+            
+            Konteks pengguna:
+            - Emosi utama yang terdeteksi: {emotion}
             
             --- RIWAYAT OBROLAN 7 HARI TERAKHIR ---
             {history_text}
@@ -124,14 +138,18 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
             Instruksi Balasan:
             1. Perhatikan riwayat obrolan di atas agar nyambung. Jika user menyebut "dia", rujuk pada konteks riwayat sebelumnya.
             2. Balas dengan bahasa Indonesia sehari-hari, gunakan "aku" dan "kamu".
-            3. Validasi perasaannya yang sedang '{emotion}' itu.
-            4. Jawab singkat saja 1-3 kalimat. Seperti chat teman di WhatsApp. Jangan pakai format list/bullet.
+            3. Validasi perasaannya yang sedang dalam fase '{emotion}' itu.
+            4. Panjang: 3-5 kalimat saja. Gunakan bahasa yang santai namun penuh perhatian, jangan sebut label emosi secara eksplisit. Jangan gunakan bullet point.
+            5. Dimulai dengan memvalidasi perasaan mereka secara tulus (bukan klise).
+            6. Menunjukkan bahwa kamu benar-benar mendengar dan memahami.
+            7. Memberikan satu kalimat penyemangat yang hangat dan realistis — BUKAN toxic positivity.
+            8. Terasa seperti pesan dari teman yang bijak, bukan ceramah.
             """
             
             try:
                 gemini_response = await llm_model.generate_content_async(prompt)
                 ai_response_text = gemini_response.text.strip()
-                print(f"✓ GEMINI MENJAWAB: '{ai_response_text}'")
+                print(f" AI MENJAWAB: '{ai_response_text}'")
             except Exception as e:
                 print(f"Gemini Error: {e}")
                 ai_response_text = "Maaf ya, server lagi gangguan sebentar. Kamu mau cerita lagi?"
@@ -151,6 +169,7 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
             "confidence": confidence,
             "intent": intent,
             "healingScore": healing_score,
+            "activitySuggestions": activity_suggestions, # Simpan saran aktivitas 
             "createdAt": datetime.utcnow()
         }
         
@@ -168,6 +187,7 @@ async def process_chat(message: str, user_id: str) -> Dict[str, Any]:
             "confidence": confidence,
             "intent": intent,
             "healingScore": healing_score,
+            "activitySuggestions": activity_suggestions,
             "timestamp": datetime.utcnow().isoformat()
         }
         

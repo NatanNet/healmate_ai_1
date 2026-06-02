@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from middleware.auth import get_current_user
 from services.mood_service import calculate_weekly_emotion
 
@@ -10,12 +10,16 @@ async def mood():
     pass
 
 @router.get("/weekly")
-async def weekly(user_id: str = Depends(get_current_user)):
+async def weekly(
+    weeksAgo: int = Query(0), # Menangkap parameter dari URL Frontend
+    user_id: str = Depends(get_current_user)
+):
     """
-    Endpoint untuk mengambil rekap emosi dominan selama 7 hari terakhir.
+    Endpoint untuk mengambil rekap emosi dominan berdasarkan kalender Senin-Minggu.
     Memerlukan token JWT (Bearer Token) dari frontend.
     """
-    result = await calculate_weekly_emotion(user_id)
+    # Mengirimkan weeksAgo ke service
+    result = await calculate_weekly_emotion(user_id, weeks_ago=weeksAgo)
     return result
 
 @router.get("/stats")

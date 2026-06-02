@@ -48,5 +48,3 @@ async def list_timecapsules(
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal mengambil daftar kapsul: {str(e)}")
-
-# ... (Biarkan endpoint @router.get("/{capsule_id}"), @router.put, dll tetap seperti aslinya untuk dikerjakan nanti) ...
