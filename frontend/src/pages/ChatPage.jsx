@@ -16,14 +16,23 @@ export default function ChatPage() {
   const [hiddenSuggestionForIndex, setHiddenSuggestionForIndex] = useState(null);
   
   const chatContainerRef = useRef(null);
+
+  // --- LOGIKA BARU: Cari saran dari obrolan manapun yang paling baru ---
+  const lastChatWithSuggestionsIndex = localChats.findLastIndex(
+    (chat) => chat.activitySuggestions && chat.activitySuggestions.length > 0
+  );
+  const latestChatWithSuggestions = lastChatWithSuggestionsIndex >= 0 ? localChats[lastChatWithSuggestionsIndex] : null;
+  
+  // Tombol di header muncul selama ada riwayat saran, dan belum ditambahkan ke Target Pemulihan
+  const shouldShowSuggestionButton = latestChatWithSuggestions !== null && hiddenSuggestionForIndex !== lastChatWithSuggestionsIndex;
   
   // --- Logika untuk mengecek saran dari chat TERBARU saja ---
-  const latestChatIndex = localChats.length - 1;
-  const latestChat = latestChatIndex >= 0 ? localChats[latestChatIndex] : null;
-  const hasLatestSuggestions = latestChat?.activitySuggestions && latestChat.activitySuggestions.length > 0;
+  // const latestChatIndex = localChats.length - 1;
+  // const latestChat = latestChatIndex >= 0 ? localChats[latestChatIndex] : null;
+  // const hasLatestSuggestions = latestChat?.activitySuggestions && latestChat.activitySuggestions.length > 0;
   
   // Tombol di header HANYA muncul jika ada saran di chat terbaru & belum dipilih/disembunyikan
-  const shouldShowSuggestionButton = hasLatestSuggestions && hiddenSuggestionForIndex !== latestChatIndex;
+  // const shouldShowSuggestionButton = hasLatestSuggestions && hiddenSuggestionForIndex !== latestChatIndex;
 
   useEffect(() => {
     fetchChatHistory();
@@ -118,14 +127,7 @@ export default function ChatPage() {
 
   return (
     <MainLayout>
-      {/* 
-        [PERBAIKAN SCROLL] 
-        Menggunakan h-[calc(100vh-100px)] dan flex-1 max-h-full agar kotak obrolan terkunci
-        dan tidak menarik halaman utama (mencegah double scroll)
-      */}
       <div className="bg-white w-full rounded-2xl md:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col overflow-hidden relative h-[calc(100vh-120px)] md:h-[calc(100vh-100px)] max-h-full">
-        
-        {/* Banner AI & Tombol Dropdown Saran */}
         <div className="bg-[#22B2B0] text-white p-4 px-4 md:px-6 flex items-center justify-between shrink-0 relative z-20 md:rounded-t-[2rem]">
           <div className="flex items-center gap-3 md:gap-4">
             <div className="bg-white/20 w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-sm shrink-0">
@@ -138,7 +140,6 @@ export default function ChatPage() {
           </div>
           
           <div className="flex items-center gap-2">
-            {/* [BARU] Tombol Lihat Saran Pindah Ke Sini */}
             {shouldShowSuggestionButton && (
               <div className="relative">
                 <button
@@ -150,7 +151,6 @@ export default function ChatPage() {
                   <i className={`fas fa-chevron-${showSuggestionsDropdown ? 'up' : 'down'} text-[10px] ml-1`}></i>
                 </button>
 
-                {/* Dropdown Menu yang melayang di bawah tombol */}
                 {showSuggestionsDropdown && (
                   <div className="absolute top-full right-0 mt-3 bg-white rounded-xl shadow-xl border border-gray-100 p-3 w-64 md:w-72 animate-fade-in-down z-50">
                     <div className="flex justify-between items-center mb-3">
@@ -162,11 +162,16 @@ export default function ChatPage() {
                       </button>
                     </div>
                     
-                    <div className="flex flex-col gap-2 max-h-[40vh] overflow-y-auto pr-1">
+                    {/* <div className="flex flex-col gap-2 max-h-[40vh] overflow-y-auto pr-1">
                       {latestChat.activitySuggestions.map((suggestion, sugIdx) => (
                         <button
                           key={sugIdx}
-                          onClick={() => handleAddSuggestionToGoals(suggestion, latestChatIndex)}
+                          onClick={() => handleAddSuggestionToGoals(suggestion, latestChatIndex)} */}
+                          <div className="flex flex-col gap-2 max-h-[40vh] overflow-y-auto pr-1">
+                              {latestChatWithSuggestions.activitySuggestions.map((suggestion, sugIdx) => (
+                              <button
+                                key={sugIdx}
+                                  onClick={() => handleAddSuggestionToGoals(suggestion, lastChatWithSuggestionsIndex)}
                           className="text-[11px] bg-gray-50 border border-gray-100 text-gray-600 px-3 py-2 rounded-lg hover:bg-[#22B2B0] hover:text-white transition-all text-left flex items-start gap-2 group shadow-sm"
                         >
                           <i className="fas fa-plus mt-0.5 text-[#22B2B0] group-hover:text-white transition-colors"></i>
@@ -179,7 +184,6 @@ export default function ChatPage() {
               </div>
             )}
 
-            {/* Logo Pelindung (Shield) */}
             <div className="hidden md:flex bg-white/20 px-3 py-1.5 rounded-full items-center gap-2 backdrop-blur-sm">
               <i className="fas fa-shield-alt text-xs"></i>
             </div>
@@ -207,17 +211,13 @@ export default function ChatPage() {
                   </div>
                   {chat.aiResponse && (
                     <div className="flex flex-col items-start gap-1">
-                      {chat.emotion && (
+                      {/* {chat.emotion && (
                         <span className="text-[10px] md:text-xs text-gray-400 ml-2">
                           Deteksi Emosi: {terjemahkanEmosi(chat.emotion)}
                         </span>
-                      )}
+                      )} */}
                       <div className="bg-white border border-gray-100 text-gray-700 px-4 md:px-5 py-3 md:py-3.5 rounded-2xl rounded-tl-sm max-w-[85%] md:max-w-[70%] shadow-sm text-sm leading-relaxed w-full">
                         <p>{chat.aiResponse}</p>
-                        {/* 
-                          KODE SARAN LAMA DI SINI SUDAH DIHAPUS 
-                          Karena sudah dipindahkan ke Header atas 
-                        */}
                       </div>
                     </div>
                   )}

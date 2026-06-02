@@ -55,11 +55,11 @@ export default function Header({ setIsSidebarOpen }) {
           <h2 className="text-2xl font-bold text-[#113C3A] mb-1">Halo, {nickname}! 👋</h2>
           <div className="flex items-center gap-2">
             <p className="text-gray-500 text-sm">Tidak apa-apa jika hari ini terasa berat, semuanya akan terlalui</p>
-            {latestEmotion && (
+            {/* {latestEmotion && (
               <span className={`text-xs px-2 py-0.5 rounded-full font-semibold text-white ${getBarColor(latestEmotion).split(' ')[0]}`}>
                 Sedang merasa {terjemahkanEmosi(latestEmotion)}
               </span>
-            )}
+            )} */}
           </div>
         </div>
       </header>
