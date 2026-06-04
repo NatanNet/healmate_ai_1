@@ -104,14 +104,11 @@ export default function LandingPage() {
       </header>
 
       <main>
-        {/* Bagian Hero (Tosca Gelap) */}
         <section className="bg-gradient-to-b from-[#20A4A0] via-[#1a8983] to-[#147A77] text-white py-16 md:py-32 px-4 md:px-8 relative overflow-hidden">
-          {/* Hiasan Latar */}
           <div className="absolute top-10 right-0 w-96 h-96 bg-white/10 rounded-full blur-[100px]"></div>
           <div className="absolute bottom-0 left-[-10%] w-80 h-80 bg-white/5 rounded-full blur-[80px]"></div>
 
           <div className="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 md:gap-16 items-center relative z-10">
-            {/* Teks Hero */}
             <div className="order-2 lg:order-1 space-y-6 md:space-y-8 text-center lg:text-left">
               <h1 className="text-4xl sm:text-5xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 Pulih Lebih Cepat,
@@ -122,14 +119,12 @@ export default function LandingPage() {
                 Pendamping pemulihan emosional yang siap mendengarkan tanpa menghakimi. Privat, aman, dan dirancang khusus untuk menemanimu melewati masa sulit.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center lg:justify-start">
-                {/* Tombol Mulai Sekarang */}
                 <button
                   onClick={() => navigate('/login')}
                   className="px-8 py-3.5 bg-white text-[#147A77] font-bold rounded-full shadow-lg shadow-black/10 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 text-base hover:bg-gray-50"
                 >
                   <i className="fas fa-robot"></i> Mulai Sekarang
                 </button>
-                {/* Tombol Pelajari Lanjut */}
                 <a
                   href="#fitur"
                   className="px-8 py-3.5 border-2 border-white text-white font-bold rounded-full hover:bg-white/10 transform hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2 text-base backdrop-blur-sm"
@@ -139,7 +134,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Gambar Ilustrasi */}
             <div className="flex justify-center order-1 lg:order-2 relative">
               <div className="relative w-64 w-80">
                 <div className="absolute inset-0 bg-[#0E3B3A]/30 rounded-full blur-3xl transform scale-110"></div>       
@@ -153,7 +147,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Kotak Fitur (Lebih Bersih) */}
         <section id="fitur" className="bg-white py-16 md:py-24 px-4 md:px-8">
           <div className="container mx-auto">
             <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
@@ -184,7 +177,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Bagian Keunggulan (Warna Tosca Cerah) */}
+        {/* Bagian Keunggulan*/}
         <section id="keunggulan" className="bg-[#22B2B0] text-white py-16 md:py-20 px-4 md:px-8 relative overflow-hidden">
           <div className="absolute inset-0 opacity-20">
             <div className="absolute top-10 right-20 w-72 h-72 bg-white rounded-full blur-[80px]"></div>
@@ -207,7 +200,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      {/* Bagian Kaki (Footer - Gelap untuk kontras penutup) */}
+      {/* Footer - Gelap untuk kontras penutup */}
       <footer className="bg-[#113C3A] text-white px-4 md:px-8 py-12 md:py-16">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12 mb-12">
@@ -243,7 +236,19 @@ export default function LandingPage() {
 
           <div className="h-px bg-white/10 mb-8"></div>
 
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-white/60 text-xs md:text-sm">
+          <div className="mb-8 flex justify-center">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-4 max-w-4xl text-center">
+              <p className="text-white/60 text-xs md:text-sm leading-relaxed">
+                <i className="fas fa-info-circle mr-1.5 text-[#22B2B0]"></i>
+                <span className="font-semibold text-white/80">(Disclaimer):</span> HealMate AI menggunakan teknologi Kecerdasan Buatan untuk mendeteksi emosi dan merangkai balasan. 
+                Prediksi dan saran yang diberikan <span className="text-white/80 font-medium">mungkin tidak 100% akurat</span> dan tidak dirancang untuk menggantikan diagnosis, saran, atau penanganan dari psikolog maupun tenaga medis profesional.
+              </p>
+            </div>
+          </div>
+
+          <div className="h-px bg-white/10 mb-8"></div>
+
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 text-white/60 text-xs md:text-sm">
             <p>&copy; 2026 HealMate AI. Seluruh hak cipta dilindungi.</p>
           </div>
         </div>
